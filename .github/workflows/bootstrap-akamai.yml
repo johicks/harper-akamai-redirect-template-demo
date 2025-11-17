@@ -90,7 +90,7 @@ jobs:
         if: ${{ steps.cfg.outputs.ew_create == 'true' }}
         run: |
           OUT="$RUNNER_TEMP/ew.json"
-          RESPONSE=$(akamai edgeworkers register \
+          akamai edgeworkers register \
             --resourceTierId "${{ steps.cfg.outputs.ew_tier }}" \
             "${{ steps.cfg.outputs.groupId }}" \
             "${{ steps.cfg.outputs.ew_name }}" \
