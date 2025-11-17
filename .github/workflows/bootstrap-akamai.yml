@@ -52,7 +52,7 @@ jobs:
       - name: Load Akamai config
         id: cfg
         run: |
-          FILE=".akamai/bootstrap-config.json"
+          FILE="akamai/bootstrap-config.json"
           jq -e . "$FILE" >/dev/null || { echo "Invalid JSON $FILE"; exit 1; }
 
           # Basic lookups (quote-safe; empty => '')
