@@ -1,0 +1,112 @@
+name: Bootstrap Akamai Redirect Stack
+
+on:
+  workflow_dispatch:
+
+env:
+  ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
+  AKAMAI_GROUP_ID: ${{ vars.AKAMAI_GROUP_ID }}
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Akamai CLI and required packages
+        run: |
+          curl -sL -o akamai https://github.com/akamai/cli/releases/download/v2.0.2/akamai-v2.0.2-linuxamd64
+          chmod +x akamai
+          sudo mv akamai /usr/local/bin/akamai
+          akamai install edgeworkers
+          akamai install property-manager
+          akamai install onboard
+
+      - name: Configure Akamai CLI credentials
+        run: |
+          : "${{ secrets.AKAMAI_HOST?Missing AKAMAI_HOST secret }}"
+          : "${{ secrets.AKAMAI_CLIENT_TOKEN?Missing AKAMAI_CLIENT_TOKEN secret }}"
+          : "${{ secrets.AKAMAI_CLIENT_SECRET?Missing AKAMAI_CLIENT_SECRET secret }}"
+          : "${{ secrets.AKAMAI_ACCESS_TOKEN?Missing AKAMAI_ACCESS_TOKEN secret }}"
+
+          cat > ~/.edgerc <<'EOF'
+          [default]
+          host = ${{ secrets.AKAMAI_HOST }}
+          client_token = ${{ secrets.AKAMAI_CLIENT_TOKEN }}
+          client_secret = ${{ secrets.AKAMAI_CLIENT_SECRET }}
+          access_token = ${{ secrets.AKAMAI_ACCESS_TOKEN }}
+          EOF
+
+      - name: Load Akamai config
+        id: cfg
+        run: |
+          FILE=".akamai/bootstrap-config.json"
+          jq -e . "$FILE" >/dev/null || { echo "Invalid JSON $FILE"; exit 1; }
+
+          # Basic lookups (quote-safe; empty => '')
+          get() { jq -r "$1 // \"\"" "$FILE"; }
+
+          echo "contractId=$(get '.account.contractId')" >> $GITHUB_OUTPUT
+          echo "groupId=$(get '.account.groupId')" >> $GITHUB_OUTPUT
+          echo "productId=$(get '.account.productId')" >> $GITHUB_OUTPUT
+
+          echo "ew_create=$(get '.edgeworker.create')" >> $GITHUB_OUTPUT
+          echo "ew_name=$(get '.edgeworker.name')" >> $GITHUB_OUTPUT
+          echo "ew_tier=$(get '.edgeworker.resourceTierId')" >> $GITHUB_OUTPUT
+
+          echo "prop_create=$(get '.property.create')" >> $GITHUB_OUTPUT
+          echo "prop_name=$(get '.property.name')" >> $GITHUB_OUTPUT
+          echo "edge_hostname=$(get '.property.edgeHostname')" >> $GITHUB_OUTPUT
+          echo "cname_target=$(get '.property.cnameTarget')" >> $GITHUB_OUTPUT
+          echo "origin_host=$(get '.property.originHostname')" >> $GITHUB_OUTPUT
+
+          echo "harper_base=$(get '.routing.harperRedirectBaseUrl')" >> $GITHUB_OUTPUT
+          echo "harper_host=$(get '.routing.sendHostHeader')" >> $GITHUB_OUTPUT
+
+          echo "flag_upload_csv=$(get '.flags.uploadRedirectCSV')" >> $GITHUB_OUTPUT
+
+      - name: Prepare account switch arg
+        id: acct
+        run: |
+          if [ -n "${{ vars.ACCOUNT_SWITCH_KEY }}" ]; then
+            echo "args=--accountkey ${{ vars.ACCOUNT_SWITCH_KEY }}" >> $GITHUB_OUTPUT
+          else
+            echo "args=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create EdgeWorker (if no ID)
+        id: create_ew
+        if: ${{ steps.cfg.outputs.flag_upload_ew == 'true' }}
+        run: |
+
+          RESPONSE=$(akamai edgeworkers create \
+            --resourceTierId "${{ steps.cfg.outputs.ew_tier }}" \
+            --groupId "${{ steps.cfg.outputs.groupId }}" \
+            --name "${{ steps.cfg.outputs.ew_name }}" \
+            --jsonout \
+            ${{ steps.acct.outputs.args }})
+
+          # Capture the numeric ID field from JSON
+          EW_ID=$(echo "$RESPONSE" | jq -r '.edgeWorkerId // empty')
+
+          echo "EdgeWorker ID: $EW_ID"
+          echo "ew_id=$EW_ID" >> $GITHUB_OUTPUT
+
+      - name: Upload EW bundle
+        if: ${{ steps.cfg.outputs.flag_upload_ew == 'true' }}
+        run: |
+          tar -czvf ew-bundle.tar.gz --exclude='.*' --exclude='README.md' *
+
+          akamai edgeworkers upload \
+            --bundle ew-bundle.tgz \
+            ${{ steps.create_ew.outputs.ew_id }}
+            ${{ steps.acct.outputs.args }}
+
+      - name: Activate EW on staging
+        run: |
+          akamai edgeworkers activate "${{ steps.create_ew.outputs.ew_id }}" \
+            staging --version latest \
+            --section "${{ steps.cfg.outputs.section }}" \
+            ${{ steps.acct.outputs.args }}
