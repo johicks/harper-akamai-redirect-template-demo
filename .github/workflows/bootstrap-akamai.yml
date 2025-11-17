@@ -100,7 +100,7 @@ jobs:
             ${{ steps.acct.outputs.args }} 1>"$OUT" 2>"$ERR"
 
           # Capture the numeric ID field from JSON
-          EW_ID=$(jq -r '.data[0].edgeWorkerId "$OUT")
+          EW_ID=$(jq -r '.data[0].edgeWorkerId // empty' "$OUT")
 
           echo "EdgeWorker ID: $EW_ID"
           echo "ew_id=$EW_ID" >> $GITHUB_OUTPUT
