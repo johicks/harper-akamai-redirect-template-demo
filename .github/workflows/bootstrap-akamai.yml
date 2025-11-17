@@ -113,11 +113,13 @@ jobs:
 
           akamai edgeworkers upload \
             --bundle ew-bundle.tar.gz \
+            ${{ steps.acct.outputs.args }} \
             ${{ steps.create_ew.outputs.ew_id }}
-            ${{ steps.acct.outputs.args }}
+        
 
       - name: Activate EW on staging
         run: |
           akamai edgeworkers activate "${{ steps.create_ew.outputs.ew_id }}" \
-            staging --version 0.1 \
+            staging \
+            0.1 \
             ${{ steps.acct.outputs.args }}
