@@ -26,10 +26,17 @@ jobs:
 
       - name: Configure Akamai CLI credentials
         run: |
-          : "${{ secrets.AKAMAI_HOST?Missing AKAMAI_HOST secret }}"
-          : "${{ secrets.AKAMAI_CLIENT_TOKEN?Missing AKAMAI_CLIENT_TOKEN secret }}"
-          : "${{ secrets.AKAMAI_CLIENT_SECRET?Missing AKAMAI_CLIENT_SECRET secret }}"
-          : "${{ secrets.AKAMAI_ACCESS_TOKEN?Missing AKAMAI_ACCESS_TOKEN secret }}"
+          # Fail if any required secrets are missing/empty
+          missing=()
+          for var in AKAMAI_HOST AKAMAI_CLIENT_TOKEN AKAMAI_CLIENT_SECRET AKAMAI_ACCESS_TOKEN; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error title=Missing secret::$var is not set."
+              missing+=("$var")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            exit 1
+          fi
 
           cat > ~/.edgerc <<'EOF'
           [default]
@@ -97,7 +104,8 @@ jobs:
       - name: Upload EW bundle
         if: ${{ steps.cfg.outputs.flag_upload_ew == 'true' }}
         run: |
-          tar -czvf ew-bundle.tar.gz --exclude='.*' --exclude='README.md' *
+          cd akamai/edgeworker
+          tar -czvf ew-bundle.tar.gz --exclude='.*' *
 
           akamai edgeworkers upload \
             --bundle ew-bundle.tgz \
@@ -107,6 +115,6 @@ jobs:
       - name: Activate EW on staging
         run: |
           akamai edgeworkers activate "${{ steps.create_ew.outputs.ew_id }}" \
-            staging --version latest \
+            staging --version 0.1 \
             --section "${{ steps.cfg.outputs.section }}" \
             ${{ steps.acct.outputs.args }}
