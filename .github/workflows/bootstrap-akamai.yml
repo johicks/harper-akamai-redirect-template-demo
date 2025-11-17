@@ -112,7 +112,7 @@ jobs:
           tar -czvf ew-bundle.tar.gz --exclude='.*' *
 
           akamai edgeworkers upload \
-            --bundle ew-bundle.tgz \
+            --bundle ew-bundle.tar.gz \
             ${{ steps.create_ew.outputs.ew_id }}
             ${{ steps.acct.outputs.args }}
 
