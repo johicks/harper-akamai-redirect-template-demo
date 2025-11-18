@@ -57,24 +57,23 @@ jobs:
           # Basic lookups (quote-safe; empty => '')
           get() { jq -r "$1 // \"\"" "$FILE"; }
 
-          echo "contractId=$(get '.account.contractId')" >> $GITHUB_OUTPUT
-          echo "groupId=$(get '.account.groupId')" >> $GITHUB_OUTPUT
-          echo "productId=$(get '.account.productId')" >> $GITHUB_OUTPUT
+          echo "contractId=$(get '.akamai-account.contractId')" >> $GITHUB_OUTPUT
+          echo "groupId=$(get '.akamai-account.groupId')" >> $GITHUB_OUTPUT
+          echo "productId=$(get '.akamai-account.productId')" >> $GITHUB_OUTPUT
 
-          echo "ew_create=$(get '.edgeworker.create')" >> $GITHUB_OUTPUT
-          echo "ew_name=$(get '.edgeworker.name')" >> $GITHUB_OUTPUT
-          echo "ew_tier=$(get '.edgeworker.resourceTierId')" >> $GITHUB_OUTPUT
+          echo "ew_create=$(get '.akamai-edgeworker.create')" >> $GITHUB_OUTPUT
+          echo "ew_name=$(get '.akamai-edgeworker.name')" >> $GITHUB_OUTPUT
+          echo "ew_tier=$(get '.akamai-edgeworker.resourceTierId')" >> $GITHUB_OUTPUT
+          echo "harper_base_url=$(get '.akamai-edgeworker.harperRedirectBaseUrl')" >> $GITHUB_OUTPUT
 
-          echo "prop_create=$(get '.property.create')" >> $GITHUB_OUTPUT
-          echo "prop_name=$(get '.property.name')" >> $GITHUB_OUTPUT
-          echo "edge_hostname=$(get '.property.edgeHostname')" >> $GITHUB_OUTPUT
-          echo "cname_target=$(get '.property.cnameTarget')" >> $GITHUB_OUTPUT
-          echo "origin_host=$(get '.property.originHostname')" >> $GITHUB_OUTPUT
+          echo "prop_create=$(get '.akamai-property.create')" >> $GITHUB_OUTPUT
+          echo "prop_name=$(get '.akamai-property.name')" >> $GITHUB_OUTPUT
+          echo "edge_hostname=$(get '.akamai-property.edgeHostname')" >> $GITHUB_OUTPUT
+          echo "cname_target=$(get '.akamai-property.cnameTarget')" >> $GITHUB_OUTPUT
+          echo "origin_host=$(get '.akamai-property.originHostname')" >> $GITHUB_OUTPUT
+          echo "harper_host=$(get '.akamai-property.sendHostHeader')" >> $GITHUB_OUTPUT
 
-          echo "harper_base=$(get '.routing.harperRedirectBaseUrl')" >> $GITHUB_OUTPUT
-          echo "harper_host=$(get '.routing.sendHostHeader')" >> $GITHUB_OUTPUT
-
-          echo "flag_upload_csv=$(get '.flags.uploadRedirectCSV')" >> $GITHUB_OUTPUT
+          echo "flag_upload_json=$(get '.harper-app.uploadRedirectJSON')" >> $GITHUB_OUTPUT
 
       - name: Prepare account switch arg
         id: acct
