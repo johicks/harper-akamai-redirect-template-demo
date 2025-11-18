@@ -1,18 +1,18 @@
 {
-  "akamai-account": {
+  "akamai_account": {
     "contractId": "ctr_1-ABCD",
     "groupId": "265792",
     "productId": "prd_SPM"        
   },
 
-  "akamai-edgeworker": {
+  "akamai_edgeworker": {
     "create": true,
     "name": "harper-redirector-ew",
     "resourceTierId": 200,
     "harperRedirectBaseUrl": "https://harper.staging.example.com/checkredirect"
   },
 
-  "akamai-property": {
+  "akamai_property": {
     "create": true,
     "name": "",
     "edgeHostname": "",
@@ -21,7 +21,7 @@
     "sendHostHeader": "harper.staging.example.com"
   },
 
-  "harper-app": {
+  "harper_app": {
     "uploadRedirectJSON": true
   }
 }
