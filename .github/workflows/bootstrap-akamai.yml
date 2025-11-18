@@ -57,23 +57,23 @@ jobs:
           # Basic lookups (quote-safe; empty => '')
           get() { jq -r "$1 // \"\"" "$FILE"; }
 
-          echo "contractId=$(get '.akamai-account.contractId')" >> $GITHUB_OUTPUT
-          echo "groupId=$(get '.akamai-account.groupId')" >> $GITHUB_OUTPUT
-          echo "productId=$(get '.akamai-account.productId')" >> $GITHUB_OUTPUT
+          echo "contractId=$(get '.akamai_account.contractId')" >> $GITHUB_OUTPUT
+          echo "groupId=$(get '.akamai_account.groupId')" >> $GITHUB_OUTPUT
+          echo "productId=$(get '.akamai_account.productId')" >> $GITHUB_OUTPUT
 
-          echo "ew_create=$(get '.akamai-edgeworker.create')" >> $GITHUB_OUTPUT
-          echo "ew_name=$(get '.akamai-edgeworker.name')" >> $GITHUB_OUTPUT
-          echo "ew_tier=$(get '.akamai-edgeworker.resourceTierId')" >> $GITHUB_OUTPUT
-          echo "harper_base_url=$(get '.akamai-edgeworker.harperRedirectBaseUrl')" >> $GITHUB_OUTPUT
+          echo "ew_create=$(get '.akamai_edgeworker.create')" >> $GITHUB_OUTPUT
+          echo "ew_name=$(get '.akamai_edgeworker.name')" >> $GITHUB_OUTPUT
+          echo "ew_tier=$(get '.akamai_edgeworker.resourceTierId')" >> $GITHUB_OUTPUT
+          echo "harper_base_url=$(get '.akamai_edgeworker.harperRedirectBaseUrl')" >> $GITHUB_OUTPUT
 
-          echo "prop_create=$(get '.akamai-property.create')" >> $GITHUB_OUTPUT
-          echo "prop_name=$(get '.akamai-property.name')" >> $GITHUB_OUTPUT
-          echo "edge_hostname=$(get '.akamai-property.edgeHostname')" >> $GITHUB_OUTPUT
-          echo "cname_target=$(get '.akamai-property.cnameTarget')" >> $GITHUB_OUTPUT
-          echo "origin_host=$(get '.akamai-property.originHostname')" >> $GITHUB_OUTPUT
-          echo "harper_host=$(get '.akamai-property.sendHostHeader')" >> $GITHUB_OUTPUT
+          echo "prop_create=$(get '.akamai_property.create')" >> $GITHUB_OUTPUT
+          echo "prop_name=$(get '.akamai_property.name')" >> $GITHUB_OUTPUT
+          echo "edge_hostname=$(get '.akamai_property.edgeHostname')" >> $GITHUB_OUTPUT
+          echo "cname_target=$(get '.akamai_property.cnameTarget')" >> $GITHUB_OUTPUT
+          echo "origin_host=$(get '.akamai_property.originHostname')" >> $GITHUB_OUTPUT
+          echo "harper_host=$(get '.akamai_property.sendHostHeader')" >> $GITHUB_OUTPUT
 
-          echo "flag_upload_json=$(get '.harper-app.uploadRedirectJSON')" >> $GITHUB_OUTPUT
+          echo "flag_upload_json=$(get '.harper_app.uploadRedirectJSON')" >> $GITHUB_OUTPUT
 
       - name: Prepare account switch arg
         id: acct
