@@ -1,363 +1,354 @@
 {
-    "accountId": "act_B-C-1ED34DK",
-    "contractId": "ctr_C-1ED34DY",
-    "groupId": "grp_265792",
-    "ruleFormat": "latest",
-    "propertyId": "prp_1285131",
-    "propertyName": "harper-redirect-template",
-    "propertyVersion": 1,
-    "rules": {
-        "name": "default",
-        "children": [
-            {
-                "name": "Accelerate delivery",
-                "children": [
-                    {
-                        "name": "Origin connectivity",
-                        "children": [],
-                        "behaviors": [
-                            {
-                                "name": "dnsAsyncRefresh",
-                                "options": {
-                                    "enabled": true,
-                                    "timeout": "1h"
-                                }
-                            },
-                            {
-                                "name": "timeout",
-                                "options": {
-                                    "value": "5s"
-                                }
-                            },
-                            {
-                                "name": "readTimeout",
-                                "options": {
-                                    "value": "120s",
-                                    "firstByteTimeout": "120s"
-                                }
+    "name": "default",
+    "children": [
+        {
+            "name": "Accelerate delivery",
+            "children": [
+                {
+                    "name": "Origin connectivity",
+                    "children": [],
+                    "behaviors": [
+                        {
+                            "name": "dnsAsyncRefresh",
+                            "options": {
+                                "enabled": true,
+                                "timeout": "1h"
                             }
-                        ],
-                        "criteria": [],
-                        "criteriaMustSatisfy": "all",
-                        "comments": "Optimize the connection between edge and origin."
-                    },
-                    {
-                        "name": "Protocol optimizations",
-                        "children": [],
-                        "behaviors": [
-                            {
-                                "name": "enhancedAkamaiProtocol",
-                                "options": {
-                                    "display": ""
-                                }
-                            },
-                            {
-                                "name": "http3",
-                                "options": {
-                                    "enable": false
-                                }
-                            },
-                            {
-                                "name": "http2",
-                                "options": {
-                                    "enabled": ""
-                                }
-                            },
-                            {
-                                "name": "allowTransferEncoding",
-                                "options": {
-                                    "enabled": true
-                                }
-                            },
-                            {
-                                "name": "sureRoute",
-                                "options": {
-                                    "enabled": false,
-                                    "srDownloadLinkTitle": ""
-                                }
+                        },
+                        {
+                            "name": "timeout",
+                            "options": {
+                                "value": "5s"
                             }
-                        ],
-                        "criteria": [],
-                        "criteriaMustSatisfy": "all",
-                        "comments": "Serve your website using modern and fast protocols."
-                    }
-                ],
-                "behaviors": [],
-                "criteria": [],
-                "criteriaMustSatisfy": "all",
-                "comments": "Control the settings related to improving the performance of delivering objects to your users."
-            },
-            {
-                "name": "Caching",
-                "children": [],
-                "behaviors": [
-                    {
-                        "name": "caching",
-                        "options": {
-                            "behavior": "NO_STORE"
-                        }
-                    },
-                    {
-                        "name": "tieredDistribution",
-                        "options": {
-                            "enabled": false
-                        }
-                    },
-                    {
-                        "name": "validateEntityTag",
-                        "options": {
-                            "enabled": false
-                        }
-                    },
-                    {
-                        "name": "removeVary",
-                        "options": {
-                            "enabled": true
-                        }
-                    },
-                    {
-                        "name": "cacheError",
-                        "options": {
-                            "enabled": true,
-                            "preserveStale": true,
-                            "ttl": "10s"
-                        }
-                    },
-                    {
-                        "name": "cacheKeyQueryParams",
-                        "options": {
-                            "behavior": "INCLUDE_ALL_ALPHABETIZE_ORDER"
-                        }
-                    },
-                    {
-                        "name": "downstreamCache",
-                        "options": {
-                            "behavior": "BUST"
-                        }
-                    },
-                    {
-                        "name": "modifyViaHeader",
-                        "options": {
-                            "enabled": true,
-                            "modificationOption": "REMOVE_HEADER"
-                        }
-                    }
-                ],
-                "criteria": [],
-                "criteriaMustSatisfy": "all",
-                "comments": "Control the settings related to caching content at the edge and in the browser. As a result, fewer requests go to your origin, fewer bytes leave your data centers, and your assets are closer to your users."
-            },
-            {
-                "name": "Strengthen security",
-                "children": [
-                    {
-                        "name": "Allowed methods",
-                        "children": [
-                            {
-                                "name": "POST",
-                                "children": [],
-                                "behaviors": [
-                                    {
-                                        "name": "allowPost",
-                                        "options": {
-                                            "allowWithoutContentLength": false,
-                                            "enabled": true
-                                        }
-                                    }
-                                ],
-                                "criteria": [],
-                                "criteriaMustSatisfy": "all",
-                                "comments": "Allow use of the POST HTTP request method."
-                            },
-                            {
-                                "name": "OPTIONS",
-                                "children": [],
-                                "behaviors": [
-                                    {
-                                        "name": "allowOptions",
-                                        "options": {
-                                            "enabled": true
-                                        }
-                                    }
-                                ],
-                                "criteria": [],
-                                "criteriaMustSatisfy": "all",
-                                "comments": "Allow use of the OPTIONS HTTP request method."
-                            },
-                            {
-                                "name": "PUT",
-                                "children": [],
-                                "behaviors": [
-                                    {
-                                        "name": "allowPut",
-                                        "options": {
-                                            "enabled": false
-                                        }
-                                    }
-                                ],
-                                "criteria": [],
-                                "criteriaMustSatisfy": "all",
-                                "comments": "Allow use of the PUT HTTP request method."
-                            },
-                            {
-                                "name": "DELETE",
-                                "children": [],
-                                "behaviors": [
-                                    {
-                                        "name": "allowDelete",
-                                        "options": {
-                                            "enabled": false
-                                        }
-                                    }
-                                ],
-                                "criteria": [],
-                                "criteriaMustSatisfy": "all",
-                                "comments": "Allow use of the DELETE HTTP request method."
-                            },
-                            {
-                                "name": "PATCH",
-                                "children": [],
-                                "behaviors": [
-                                    {
-                                        "name": "allowPatch",
-                                        "options": {
-                                            "enabled": false
-                                        }
-                                    }
-                                ],
-                                "criteria": [],
-                                "criteriaMustSatisfy": "all",
-                                "comments": "Allow use of the PATCH HTTP request method."
+                        },
+                        {
+                            "name": "readTimeout",
+                            "options": {
+                                "value": "120s",
+                                "firstByteTimeout": "120s"
                             }
-                        ],
-                        "behaviors": [
-                            {
-                                "name": "allHttpInCacheHierarchy",
-                                "options": {
-                                    "enabled": true
-                                }
+                        }
+                    ],
+                    "criteria": [],
+                    "criteriaMustSatisfy": "all",
+                    "comments": "Optimize the connection between edge and origin."
+                },
+                {
+                    "name": "Protocol optimizations",
+                    "children": [],
+                    "behaviors": [
+                        {
+                            "name": "enhancedAkamaiProtocol",
+                            "options": {
+                                "display": ""
                             }
-                        ],
-                        "criteria": [],
-                        "criteriaMustSatisfy": "all",
-                        "comments": "Allow the use of HTTP methods. Consider enabling additional methods under a path match for increased origin security."
-                    },
-                    {
-                        "name": "Obfuscate debug info",
-                        "children": [],
-                        "behaviors": [
-                            {
-                                "name": "cacheTagVisible",
-                                "options": {
-                                    "behavior": "PRAGMA_HEADER"
-                                }
+                        },
+                        {
+                            "name": "http3",
+                            "options": {
+                                "enable": false
                             }
-                        ],
-                        "criteria": [],
-                        "criteriaMustSatisfy": "all",
-                        "comments": "Do not expose back-end information unless the request contains the Pragma debug header."
-                    },
-                    {
-                        "name": "Obfuscate backend info",
-                        "children": [],
-                        "behaviors": [
-                            {
-                                "name": "modifyOutgoingResponseHeader",
-                                "options": {
-                                    "action": "DELETE",
-                                    "customHeaderName": "X-Powered-By",
-                                    "standardDeleteHeaderName": "OTHER"
-                                }
-                            },
-                            {
-                                "name": "modifyOutgoingResponseHeader",
-                                "options": {
-                                    "action": "DELETE",
-                                    "customHeaderName": "Server",
-                                    "standardDeleteHeaderName": "OTHER"
-                                }
+                        },
+                        {
+                            "name": "http2",
+                            "options": {
+                                "enabled": ""
                             }
-                        ],
-                        "criteria": [
-                            {
-                                "name": "requestHeader",
-                                "options": {
-                                    "headerName": "X-Akamai-Debug",
-                                    "matchCaseSensitiveValue": true,
-                                    "matchOperator": "IS_NOT_ONE_OF",
-                                    "matchWildcardName": false,
-                                    "matchWildcardValue": false,
-                                    "values": [
-                                        "true"
-                                    ]
-                                }
+                        },
+                        {
+                            "name": "allowTransferEncoding",
+                            "options": {
+                                "enabled": true
                             }
-                        ],
-                        "criteriaMustSatisfy": "all",
-                        "comments": "Do not expose back-end information unless the request contains an additional secret header. Regularly change the criteria to use a specific unique value for the secret header."
-                    },
-                    {
-                        "name": "HSTS",
-                        "children": [],
-                        "behaviors": [
-                            {
-                                "name": "httpStrictTransportSecurity",
-                                "options": {
-                                    "enable": false
-                                }
+                        },
+                        {
+                            "name": "sureRoute",
+                            "options": {
+                                "enabled": false,
+                                "srDownloadLinkTitle": ""
                             }
-                        ],
-                        "criteria": [],
-                        "criteriaMustSatisfy": "all",
-                        "comments": "Require all browsers to connect to your site using HTTPS."
-                    }
-                ],
-                "behaviors": [],
-                "criteria": [],
-                "criteriaMustSatisfy": "all",
-                "comments": "Control the settings that minimize the information your website shares with clients and malicious entities to reduce your exposure to threats."
-            }
-        ],
-        "behaviors": [
-            {
-                "name": "origin",
-                "options": {
-                    "cacheKeyHostname": "REQUEST_HOST_HEADER",
-                    "compress": true,
-                    "enableTrueClientIp": true,
-                    "forwardHostHeader": "REQUEST_HOST_HEADER",
-                    "httpPort": 80,
-                    "httpsPort": 443,
-                    "minTlsVersion": "DYNAMIC",
-                    "originCertificate": "",
-                    "originSni": true,
-                    "originType": "CUSTOMER",
-                    "ports": "",
-                    "tlsVersionTitle": "",
-                    "trueClientIpClientSetting": false,
-                    "trueClientIpHeader": "True-Client-IP",
-                    "verificationMode": "PLATFORM_SETTINGS",
-                    "hostname": "placeholder.hdb.com",
-                    "ipVersion": "IPV4"
+                        }
+                    ],
+                    "criteria": [],
+                    "criteriaMustSatisfy": "all",
+                    "comments": "Serve your website using modern and fast protocols."
                 }
-            },
-            {
-                "name": "enhancedDebug",
-                "options": {
-                    "enableDebug": false
-                }
-            },
-            {
-                "name": "cpCode",
-                "options": {
-                    "enableDefaultContentProviderCode": true
-                }
-            }
-        ],
-        "options": {
-            "is_secure": false
+            ],
+            "behaviors": [],
+            "criteria": [],
+            "criteriaMustSatisfy": "all",
+            "comments": "Control the settings related to improving the performance of delivering objects to your users."
         },
-        "variables": [],
-        "comments": "The Default Rule template contains all the necessary and recommended behaviors. Rules are evaluated from top to bottom and the last matching rule wins."
-    }
+        {
+            "name": "Caching",
+            "children": [],
+            "behaviors": [
+                {
+                    "name": "caching",
+                    "options": {
+                        "behavior": "NO_STORE"
+                    }
+                },
+                {
+                    "name": "tieredDistribution",
+                    "options": {
+                        "enabled": false
+                    }
+                },
+                {
+                    "name": "validateEntityTag",
+                    "options": {
+                        "enabled": false
+                    }
+                },
+                {
+                    "name": "removeVary",
+                    "options": {
+                        "enabled": true
+                    }
+                },
+                {
+                    "name": "cacheError",
+                    "options": {
+                        "enabled": true,
+                        "preserveStale": true,
+                        "ttl": "10s"
+                    }
+                },
+                {
+                    "name": "cacheKeyQueryParams",
+                    "options": {
+                        "behavior": "INCLUDE_ALL_ALPHABETIZE_ORDER"
+                    }
+                },
+                {
+                    "name": "downstreamCache",
+                    "options": {
+                        "behavior": "BUST"
+                    }
+                },
+                {
+                    "name": "modifyViaHeader",
+                    "options": {
+                        "enabled": true,
+                        "modificationOption": "REMOVE_HEADER"
+                    }
+                }
+            ],
+            "criteria": [],
+            "criteriaMustSatisfy": "all",
+            "comments": "Control the settings related to caching content at the edge and in the browser. As a result, fewer requests go to your origin, fewer bytes leave your data centers, and your assets are closer to your users."
+        },
+        {
+            "name": "Strengthen security",
+            "children": [
+                {
+                    "name": "Allowed methods",
+                    "children": [
+                        {
+                            "name": "POST",
+                            "children": [],
+                            "behaviors": [
+                                {
+                                    "name": "allowPost",
+                                    "options": {
+                                        "allowWithoutContentLength": false,
+                                        "enabled": true
+                                    }
+                                }
+                            ],
+                            "criteria": [],
+                            "criteriaMustSatisfy": "all",
+                            "comments": "Allow use of the POST HTTP request method."
+                        },
+                        {
+                            "name": "OPTIONS",
+                            "children": [],
+                            "behaviors": [
+                                {
+                                    "name": "allowOptions",
+                                    "options": {
+                                        "enabled": true
+                                    }
+                                }
+                            ],
+                            "criteria": [],
+                            "criteriaMustSatisfy": "all",
+                            "comments": "Allow use of the OPTIONS HTTP request method."
+                        },
+                        {
+                            "name": "PUT",
+                            "children": [],
+                            "behaviors": [
+                                {
+                                    "name": "allowPut",
+                                    "options": {
+                                        "enabled": false
+                                    }
+                                }
+                            ],
+                            "criteria": [],
+                            "criteriaMustSatisfy": "all",
+                            "comments": "Allow use of the PUT HTTP request method."
+                        },
+                        {
+                            "name": "DELETE",
+                            "children": [],
+                            "behaviors": [
+                                {
+                                    "name": "allowDelete",
+                                    "options": {
+                                        "enabled": false
+                                    }
+                                }
+                            ],
+                            "criteria": [],
+                            "criteriaMustSatisfy": "all",
+                            "comments": "Allow use of the DELETE HTTP request method."
+                        },
+                        {
+                            "name": "PATCH",
+                            "children": [],
+                            "behaviors": [
+                                {
+                                    "name": "allowPatch",
+                                    "options": {
+                                        "enabled": false
+                                    }
+                                }
+                            ],
+                            "criteria": [],
+                            "criteriaMustSatisfy": "all",
+                            "comments": "Allow use of the PATCH HTTP request method."
+                        }
+                    ],
+                    "behaviors": [
+                        {
+                            "name": "allHttpInCacheHierarchy",
+                            "options": {
+                                "enabled": true
+                            }
+                        }
+                    ],
+                    "criteria": [],
+                    "criteriaMustSatisfy": "all",
+                    "comments": "Allow the use of HTTP methods. Consider enabling additional methods under a path match for increased origin security."
+                },
+                {
+                    "name": "Obfuscate debug info",
+                    "children": [],
+                    "behaviors": [
+                        {
+                            "name": "cacheTagVisible",
+                            "options": {
+                                "behavior": "PRAGMA_HEADER"
+                            }
+                        }
+                    ],
+                    "criteria": [],
+                    "criteriaMustSatisfy": "all",
+                    "comments": "Do not expose back-end information unless the request contains the Pragma debug header."
+                },
+                {
+                    "name": "Obfuscate backend info",
+                    "children": [],
+                    "behaviors": [
+                        {
+                            "name": "modifyOutgoingResponseHeader",
+                            "options": {
+                                "action": "DELETE",
+                                "customHeaderName": "X-Powered-By",
+                                "standardDeleteHeaderName": "OTHER"
+                            }
+                        },
+                        {
+                            "name": "modifyOutgoingResponseHeader",
+                            "options": {
+                                "action": "DELETE",
+                                "customHeaderName": "Server",
+                                "standardDeleteHeaderName": "OTHER"
+                            }
+                        }
+                    ],
+                    "criteria": [
+                        {
+                            "name": "requestHeader",
+                            "options": {
+                                "headerName": "X-Akamai-Debug",
+                                "matchCaseSensitiveValue": true,
+                                "matchOperator": "IS_NOT_ONE_OF",
+                                "matchWildcardName": false,
+                                "matchWildcardValue": false,
+                                "values": [
+                                    "true"
+                                ]
+                            }
+                        }
+                    ],
+                    "criteriaMustSatisfy": "all",
+                    "comments": "Do not expose back-end information unless the request contains an additional secret header. Regularly change the criteria to use a specific unique value for the secret header."
+                },
+                {
+                    "name": "HSTS",
+                    "children": [],
+                    "behaviors": [
+                        {
+                            "name": "httpStrictTransportSecurity",
+                            "options": {
+                                "enable": false
+                            }
+                        }
+                    ],
+                    "criteria": [],
+                    "criteriaMustSatisfy": "all",
+                    "comments": "Require all browsers to connect to your site using HTTPS."
+                }
+            ],
+            "behaviors": [],
+            "criteria": [],
+            "criteriaMustSatisfy": "all",
+            "comments": "Control the settings that minimize the information your website shares with clients and malicious entities to reduce your exposure to threats."
+        }
+    ],
+    "behaviors": [
+        {
+            "name": "origin",
+            "options": {
+                "cacheKeyHostname": "REQUEST_HOST_HEADER",
+                "compress": true,
+                "enableTrueClientIp": true,
+                "forwardHostHeader": "REQUEST_HOST_HEADER",
+                "httpPort": 80,
+                "httpsPort": 443,
+                "minTlsVersion": "DYNAMIC",
+                "originCertificate": "",
+                "originSni": true,
+                "originType": "CUSTOMER",
+                "ports": "",
+                "tlsVersionTitle": "",
+                "trueClientIpClientSetting": false,
+                "trueClientIpHeader": "True-Client-IP",
+                "verificationMode": "PLATFORM_SETTINGS",
+                "hostname": "placeholder.hdb.com",
+                "ipVersion": "IPV4"
+            }
+        },
+        {
+            "name": "enhancedDebug",
+            "options": {
+                "enableDebug": false
+            }
+        },
+        {
+            "name": "cpCode",
+            "options": {
+                "enableDefaultContentProviderCode": true
+            }
+        }
+    ],
+    "options": {
+        "is_secure": false
+    },
+    "variables": [],
+    "comments": "The Default Rule template contains all the necessary and recommended behaviors. Rules are evaluated from top to bottom and the last matching rule wins."
 }

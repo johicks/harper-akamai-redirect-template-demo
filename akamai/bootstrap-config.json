@@ -1,23 +1,23 @@
 {
   "akamai_account": {
-    "contractId": "ctr_1-ABCD",
+    "contractId": "C-1ED34DY",
     "groupId": "265792",
-    "productId": "prd_SPM"        
+    "productId": "prd_Fresca"        
   },
 
   "akamai_edgeworker": {
     "create": true,
     "name": "harper-redirector-ew",
     "resourceTierId": 200,
-    "harperRedirectBaseUrl": "https://harper.staging.example.com/checkredirect"
+    "harperRedirectBaseUrl": "https://harper-redirects.akamaized.net/checkredirect"
   },
 
   "akamai_property": {
     "create": true,
-    "name": "",
-    "edgeHostname": "",
-    "cnameTarget": "",
-    "originHostname": "",
+    "name": "harper-redirect-ew-subrequests",
+    "edgeHostname": "harper-redirects.akamaized.net",
+    "cnameTarget": "harper-redirects.akamaized.net",
+    "originHostname": "harper.staging.example.com",
     "sendHostHeader": "harper.staging.example.com"
   },
 

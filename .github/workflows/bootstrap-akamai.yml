@@ -127,3 +127,44 @@ jobs:
             staging \
             0.1 \
             ${{ steps.acct.outputs.args }}
+      
+          
+      - name: Create Property from template
+        id: create_property
+        if: ${{ steps.cfg.outputs.prop_create == 'true' }}
+        run: |
+          set -euo pipefail
+
+          PROP_NAME="${{ steps.cfg.outputs.prop_name }}"
+          CONTRACT_ID="${{ steps.cfg.outputs.contractId }}"
+          GROUP_ID="${{ steps.cfg.outputs.groupId }}"
+          PRODUCT_ID="${{ steps.cfg.outputs.productId }}"
+
+          if [ -z "$PROP_NAME" ]; then
+            echo "::error title=Missing property name::akamai_property.name is empty in akamai/bootstrap-config.json"
+            exit 1
+          fi
+
+          TEMPLATE_FILE="akamai/property/harper-redirect-template.v1.default.json"
+          if [ ! -f "$TEMPLATE_FILE" ]; then
+            echo "::error title=Missing template file::$TEMPLATE_FILE not found"
+            exit 1
+          fi
+
+          echo "Creating new property $PROP_NAME on contract $CONTRACT_ID, group $GROUP_ID, product $PRODUCT_ID"
+
+          # 1) Create the bare property
+          akamai property-manager new-property \
+            -c "$CONTRACT_ID" \
+            -g "$GROUP_ID" \
+            -d "$PRODUCT_ID" \
+            -p "$PROP_NAME" \
+            --secure \
+            --accountSwitchKey ${{ vars.ACCOUNT_SWITCH_KEY }}
+
+          # 2) Apply your template rules directly from the file
+          akamai property-manager property-update \
+            -p "$PROP_NAME" \
+            --file "$TEMPLATE_FILE" \
+            --message "Initialize from harper-redirect-template.v1.default.json"
+            --accountSwitchKey ${{ vars.ACCOUNT_SWITCH_KEY }}
