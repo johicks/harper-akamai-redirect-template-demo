@@ -40,12 +40,18 @@ jobs:
             exit 1
           fi
 
-          cat > ~/.edgerc <<'EOF'
+          cat > ~/.edgerc <<EOF
           [default]
           host = AKAMAI_HOST
           client_token = AKAMAI_CLIENT_TOKEN
           client_secret = AKAMAI_CLIENT_SECRET
           access_token = AKAMAI_ACCESS_TOKEN
+          
+          [papi]
+          host = $AKAMAI_HOST
+          client_token = $AKAMAI_CLIENT_TOKEN
+          client_secret = $AKAMAI_CLIENT_SECRET
+          access_token = $AKAMAI_ACCESS_TOKEN
           EOF
 
       - name: Load Akamai config
@@ -132,8 +138,6 @@ jobs:
       - name: Create Property from template
         id: create_property
         if: ${{ steps.cfg.outputs.prop_create == 'true' }}
-        env:
-          AKAMAI_EDGERC_CONFIG_SECTION: default
         run: |
           set -euo pipefail
 
