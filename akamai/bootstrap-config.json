@@ -1,8 +1,7 @@
 {
   "akamai_account": {
     "contractId": "C-1ED34DY",
-    "groupId": "265792",
-    "productId": "prd_Fresca"        
+    "groupId": "265792"        
   },
 
   "akamai_edgeworker": {
@@ -14,6 +13,8 @@
 
   "akamai_property": {
     "create": true,
+    "productId": "prd_Fresca",
+    "network": "enhancedTLS",    
     "name": "harper-redirect-ew-subrequests",
     "edgeHostname": "harper-redirects.akamaized.net",
     "cnameTarget": "harper-redirects.akamaized.net",

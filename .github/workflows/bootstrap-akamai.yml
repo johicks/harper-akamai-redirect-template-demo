@@ -65,7 +65,6 @@ jobs:
 
           echo "contractId=$(get '.akamai_account.contractId')" >> $GITHUB_OUTPUT
           echo "groupId=$(get '.akamai_account.groupId')" >> $GITHUB_OUTPUT
-          echo "productId=$(get '.akamai_account.productId')" >> $GITHUB_OUTPUT
 
           echo "ew_create=$(get '.akamai_edgeworker.create')" >> $GITHUB_OUTPUT
           echo "ew_name=$(get '.akamai_edgeworker.name')" >> $GITHUB_OUTPUT
@@ -73,6 +72,8 @@ jobs:
           echo "harper_base_url=$(get '.akamai_edgeworker.harperRedirectBaseUrl')" >> $GITHUB_OUTPUT
 
           echo "prop_create=$(get '.akamai_property.create')" >> $GITHUB_OUTPUT
+          echo "productId=$(get '.akamai_property.productId')" >> $GITHUB_OUTPUT
+          echo "network=$(get '.akamai_property.network')" >> $GITHUB_OUTPUT
           echo "prop_name=$(get '.akamai_property.name')" >> $GITHUB_OUTPUT
           echo "edge_hostname=$(get '.akamai_property.edgeHostname')" >> $GITHUB_OUTPUT
           echo "cname_target=$(get '.akamai_property.cnameTarget')" >> $GITHUB_OUTPUT
@@ -111,6 +112,7 @@ jobs:
 
 
       - name: Inject HARPER_BASE_URL into EdgeWorker
+        if: ${{ steps.cfg.outputs.ew_create == 'true' }}
         run: |
           sed -i "s|const HARPER_BASE_URL = 'https://YOUR-HARPER-HOST/checkredirect';|const HARPER_BASE_URL = '${{ steps.cfg.outputs.harper_base_url }}';|" akamai/edgeworker/main.js
 
@@ -146,6 +148,7 @@ jobs:
           PRODUCT_ID: ${{ steps.cfg.outputs.productId }}
           ORIGIN_HOST: ${{ steps.cfg.outputs.origin_host }}
           SEND_HOST_HEADER: ${{ steps.cfg.outputs.harper_host }}
+          SECURE: ${{ steps.cfg.outputs.network }}
           ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
         run: |
           set -euo pipefail
@@ -163,6 +166,9 @@ jobs:
 
           # Build PM CLI account switch args
           PM_ARGS=()
+          if [ "${NETWORK:-}" = "enhancedTLS" ]; then
+            PM_ARGS+=(--secure)
+          fi
           if [ -n "${ACCOUNT_SWITCH_KEY:-}" ]; then
             PM_ARGS+=(--accountSwitchKey "$ACCOUNT_SWITCH_KEY")
           fi
@@ -234,4 +240,43 @@ jobs:
             -p "$PROP_ID" \
             --file "$RULES_FILE" \
             --message "Initialize/update from harper-redirect-template.v1.default.json" \
+            "${PM_ARGS[@]}"
+
+      - name: Update property hostnames
+        if: ${{ steps.cfg.outputs.prop_create == 'true' }}
+        env:
+          PROP_ID: ${{ steps.create_property.outputs.prop_id }}
+          CONTRACT_ID: ${{ steps.cfg.outputs.contractId }}
+          GROUP_ID: ${{ steps.cfg.outputs.groupId }}
+          EDGE_HOSTNAME: ${{ steps.cfg.outputs.edge_hostname }}
+          CNAME_TARGET: ${{ steps.cfg.outputs.cname_target }}
+          ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PROP_ID:-}" ]; then
+            echo "::error::prop_id missing from create_property step"
+            exit 1
+          fi
+
+          if [ -z "${EDGE_HOSTNAME:-}" ] || [ -z "${CNAME_TARGET:-}" ]; then
+            echo "edgeHostname or cnameTarget is empty in akamai/bootstrap-config.json; skipping hostname update."
+            exit 0
+          fi
+
+          # Build PM CLI account switch args
+          PM_ARGS=()
+          if [ -n "${ACCOUNT_SWITCH_KEY:-}" ]; then
+            PM_ARGS+=(--accountSwitchKey "$ACCOUNT_SWITCH_KEY")
+          fi
+
+          HOSTNAMES_FILE="$RUNNER_TEMP/${PROP_ID}-hostnames.json"
+          echo "Creating hostnames mapping JSON at $HOSTNAMES_FILE"
+          jq -n --arg from "$CNAME_TARGET" --arg to "$EDGE_HOSTNAME" \
+            '[{ cnameFrom: $from, cnameTo: $to, cnameType: "EDGE_HOSTNAME", edgeHostnameId: null }]' > "$HOSTNAMES_FILE"
+
+          echo "Updating hostnames for property id '$PROP_ID' using hostname-update"
+          akamai property-manager hostname-update \
+            -p "$PROP_ID" \
+            --file "$HOSTNAMES_FILE" \
             "${PM_ARGS[@]}"
