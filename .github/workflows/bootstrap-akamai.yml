@@ -276,8 +276,20 @@ jobs:
           jq -n --arg from "$CNAME_TARGET" --arg to "$EDGE_HOSTNAME" \
             '[{ cnameFrom: $from, cnameTo: $to, certProvisioningType: "DEFAULT", cnameType: "EDGE_HOSTNAME", edgeHostnameId: null }]' > "$HOSTNAMES_FILE"
 
-          echo "Updating hostnames for property id '$PROP_ID' using hostname-update"
+          echo "Determining latest property version for '$PROP_ID' via list-property-hostnames"
+          PROPVER=$(akamai property-manager list-property-hostnames \
+            -p "$PROP_ID" \
+            --format json \
+            "${PM_ARGS[@]}" | jq -r '.propertyVersion')
+
+          if [ -z "${PROPVER:-}" ] || [ "${PROPVER}" = "null" ]; then
+            echo "::error::Could not determine property version for '$PROP_ID' from list-property-hostnames output"
+            exit 1
+          fi
+
+          echo "Updating hostnames for property id '$PROP_ID' on version $PROPVER using hostname-update"
           akamai property-manager hostname-update \
             -p "$PROP_ID" \
+            --propver "$PROPVER" \
             --file "$HOSTNAMES_FILE" \
             "${PM_ARGS[@]}"
