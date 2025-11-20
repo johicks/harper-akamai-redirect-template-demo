@@ -272,8 +272,9 @@ jobs:
 
           HOSTNAMES_FILE="$RUNNER_TEMP/${PROP_ID}-hostnames.json"
           echo "Creating hostnames mapping JSON at $HOSTNAMES_FILE"
+          # hostname-update expects an array of hostname objects.
           jq -n --arg from "$CNAME_TARGET" --arg to "$EDGE_HOSTNAME" \
-            '[{ cnameFrom: $from, cnameTo: $to, cnameType: "EDGE_HOSTNAME", edgeHostnameId: null }]' > "$HOSTNAMES_FILE"
+            '[{ cnameFrom: $from, cnameTo: $to, certProvisioningType: "DEFAULT", cnameType: "EDGE_HOSTNAME", edgeHostnameId: null }]' > "$HOSTNAMES_FILE"
 
           echo "Updating hostnames for property id '$PROP_ID' using hostname-update"
           akamai property-manager hostname-update \
