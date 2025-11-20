@@ -144,6 +144,8 @@ jobs:
           CONTRACT_ID: ${{ steps.cfg.outputs.contractId }}
           GROUP_ID: ${{ steps.cfg.outputs.groupId }}
           PRODUCT_ID: ${{ steps.cfg.outputs.productId }}
+          ORIGIN_HOST: ${{ steps.cfg.outputs.origin_host }}
+          SEND_HOST_HEADER: ${{ steps.cfg.outputs.harper_host }}
           ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
         run: |
           set -euo pipefail
@@ -207,9 +209,29 @@ jobs:
 
           echo "prop_id=$PROP_ID" >> "$GITHUB_OUTPUT"
 
-          echo "Updating rules for property id '$PROP_ID' from template $TEMPLATE_FILE"
+          # Prepare a rules file with origin/host header overridden from bootstrap-config
+          RULES_FILE="$RUNNER_TEMP/${PROP_NAME}-rules.json"
+          cp "$TEMPLATE_FILE" "$RULES_FILE"
+
+          if [ -n "${ORIGIN_HOST:-}" ]; then
+            echo "Setting origin hostname to '$ORIGIN_HOST' in rules JSON"
+            jq --arg host "$ORIGIN_HOST" \
+              '.rules.behaviors |= (map(if .name == "origin" then (.options.hostname = $host) else . end))' \
+              "$RULES_FILE" > "$RULES_FILE.tmp"
+            mv "$RULES_FILE.tmp" "$RULES_FILE"
+          fi
+
+          if [ -n "${SEND_HOST_HEADER:-}" ]; then
+            echo "Setting forward host header to '$SEND_HOST_HEADER' in rules JSON"
+            jq --arg send "$SEND_HOST_HEADER" \
+              '.rules.behaviors |= (map(if .name == "origin" then (.options.forwardHostHeader = $send) else . end))' \
+              "$RULES_FILE" > "$RULES_FILE.tmp"
+            mv "$RULES_FILE.tmp" "$RULES_FILE"
+          fi
+
+          echo "Updating rules for property id '$PROP_ID' from $RULES_FILE"
           akamai property-manager property-update \
             -p "$PROP_ID" \
-            --file "$TEMPLATE_FILE" \
+            --file "$RULES_FILE" \
             --message "Initialize/update from harper-redirect-template.v1.default.json" \
             "${PM_ARGS[@]}"

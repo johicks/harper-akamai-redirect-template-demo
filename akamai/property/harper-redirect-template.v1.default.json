@@ -319,7 +319,7 @@
                     "cacheKeyHostname": "REQUEST_HOST_HEADER",
                     "compress": true,
                     "enableTrueClientIp": true,
-                    "forwardHostHeader": "REQUEST_HOST_HEADER",
+                    "forwardHostHeader": "placeholder.hdb.com",
                     "httpPort": 80,
                     "httpsPort": 443,
                     "minTlsVersion": "DYNAMIC",
