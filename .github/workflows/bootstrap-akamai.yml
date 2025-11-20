@@ -242,7 +242,7 @@ jobs:
                   --file "$RULES_FILE" \
                   --message "Initialize/update from harper-redirect-template.v1.default.json" \
                   "${PM_ARGS[@]}" \
-              | jq -r '.[0].propertyVersion // empty'
+              | jq -r '.propertyVersion // empty'
           )
           echo "prop_ver=$PROP_VER" >> "$GITHUB_OUTPUT"
 
