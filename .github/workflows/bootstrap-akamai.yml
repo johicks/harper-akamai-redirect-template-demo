@@ -144,6 +144,7 @@ jobs:
           CONTRACT_ID: ${{ steps.cfg.outputs.contractId }}
           GROUP_ID: ${{ steps.cfg.outputs.groupId }}
           PRODUCT_ID: ${{ steps.cfg.outputs.productId }}
+          ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
         run: |
           set -euo pipefail
 
@@ -158,40 +159,57 @@ jobs:
             exit 1
           fi
 
-          echo "Checking if property '$PROP_NAME' already exists..."
+          # Build PM CLI account switch args
+          PM_ARGS=()
+          if [ -n "${ACCOUNT_SWITCH_KEY:-}" ]; then
+            PM_ARGS+=(--accountSwitchKey "$ACCOUNT_SWITCH_KEY")
+          fi
 
-          # Does the property already exist?
-          if akamai property-manager search "$PROP_NAME" --accountSwitchKey ${{ vars.ACCOUNT_SWITCH_KEY }} | grep -q "$PROP_NAME"; then
-            echo "Property '$PROP_NAME' already exists. Skipping creation."
-          else
+          search_property_id() {
+            # Returns propertyId or empty string
+            akamai property-manager search "$PROP_NAME" --format json "${PM_ARGS[@]}" \
+              | jq -r '.[0].propertyId // empty'
+          }
+
+          echo "Checking if property '$PROP_NAME' already exists via property-manager search..."
+          PROP_ID="$(search_property_id || true)"
+
+          if [ -z "$PROP_ID" ]; then
             echo "Property '$PROP_NAME' not found. Creating new property on contract $CONTRACT_ID, group $GROUP_ID, product $PRODUCT_ID"
 
             akamai property-manager new-property \
               -c "$CONTRACT_ID" \
               -g "$GROUP_ID" \
               -d "$PRODUCT_ID" \
-              -p "$PROP_NAME"
-              --secure
-              --accountSwitchKey ${{ vars.ACCOUNT_SWITCH_KEY }}
+              -p "$PROP_NAME" \
+              "${PM_ARGS[@]}"
 
             echo "Property creation requested. Waiting for it to be visible in PAPI..."
 
-            # Wait/retry until PAPI can see the property (to avoid property_does_not_exist_on_server).
+            # Poll until property shows up in search
             for i in $(seq 1 10); do
-              if akamai property-manager search "$PROP_NAME" --accountSwitchKey ${{ vars.ACCOUNT_SWITCH_KEY }} | grep -q "$PROP_NAME"; then
-                echo "Property '$PROP_NAME' is now visible (attempt $i)."
+              PROP_ID="$(search_property_id || true)"
+              if [ -n "$PROP_ID" ]; then
+                echo "Property '$PROP_NAME' is now visible with id '$PROP_ID' (attempt $i)."
                 break
               fi
               echo "Property '$PROP_NAME' not visible yet (attempt $i). Sleeping 10s..."
               sleep 10
             done
+          else
+            echo "Property '$PROP_NAME' already exists with id '$PROP_ID'."
           fi
 
-          echo "Updating rules for property '$PROP_NAME' from template $TEMPLATE_FILE"
+          if [ -z "$PROP_ID" ]; then
+            echo "::error::Property '$PROP_NAME' never became visible in search; aborting."
+            exit 1
+          fi
 
-          # Now that we know the property exists (either pre‑existing or newly created),
-          # create a new version with your rules JSON.
+          echo "prop_id=$PROP_ID" >> "$GITHUB_OUTPUT"
+
+          echo "Updating rules for property id '$PROP_ID' from template $TEMPLATE_FILE"
           akamai property-manager property-update \
-            -p "$PROP_NAME" \
+            -p "$PROP_ID" \
             --file "$TEMPLATE_FILE" \
-            --message "Initialize/update from harper-redirect-template.v1.default.json"
+            --message "Initialize/update from harper-redirect-template.v1.default.json" \
+            "${PM_ARGS[@]}"
