@@ -42,10 +42,10 @@ jobs:
 
           cat > ~/.edgerc <<EOF
           [default]
-          host = AKAMAI_HOST
-          client_token = AKAMAI_CLIENT_TOKEN
-          client_secret = AKAMAI_CLIENT_SECRET
-          access_token = AKAMAI_ACCESS_TOKEN
+          host = $AKAMAI_HOST
+          client_token = $AKAMAI_CLIENT_TOKEN
+          client_secret = $AKAMAI_CLIENT_SECRET
+          access_token = $AKAMAI_ACCESS_TOKEN
           
           [papi]
           host = $AKAMAI_HOST
@@ -87,27 +87,26 @@ jobs:
 
           echo "flag_upload_json=$(get '.harper_app.uploadRedirectJSON')" >> $GITHUB_OUTPUT
 
-      - name: Prepare account switch arg
-        id: acct
-        run: |
-          if [ -n "${{ vars.ACCOUNT_SWITCH_KEY }}" ]; then
-            echo "args=--accountkey ${{ vars.ACCOUNT_SWITCH_KEY }}" >> $GITHUB_OUTPUT
-          else
-            echo "args=" >> $GITHUB_OUTPUT
-          fi
+
 
       - name: Create EdgeWorker
         id: create_ew
         if: ${{ steps.cfg.outputs.ew_create == 'true' }}
         run: |
           OUT="$RUNNER_TEMP/ew.json"; ERR="$RUNNER_TEMP/ew.err"
+          
+          # Build PM CLI account switch args
+          PM_ARGS=()
+          if [ -n "${ACCOUNT_SWITCH_KEY:-}" ]; then
+            PM_ARGS+=(--accountkey "$ACCOUNT_SWITCH_KEY")
+          fi
 
           akamai edgeworkers register \
             --resourceTierId "${{ steps.cfg.outputs.ew_tier }}" \
             "${{ steps.cfg.outputs.groupId }}" \
             "${{ steps.cfg.outputs.ew_name }}" \
             --jsonout \
-            ${{ steps.acct.outputs.args }} 1>"$OUT" 2>"$ERR"
+            "${PM_ARGS[@]}" 1>"$OUT" 2>"$ERR"
 
           # strip everything before the first '{' then parse
           EW_ID=$(sed -e '1s/^[^{]*//' "$OUT" | jq -r '.data[0].edgeWorkerId')
@@ -127,10 +126,16 @@ jobs:
         run: |
           cd akamai/edgeworker
           tar -czvf ew-bundle.tar.gz --exclude='.*' *
+          
+          # Build PM CLI account switch args
+          PM_ARGS=()
+          if [ -n "${ACCOUNT_SWITCH_KEY:-}" ]; then
+            PM_ARGS+=(--accountkey "$ACCOUNT_SWITCH_KEY")
+          fi
 
           akamai edgeworkers upload \
             --bundle ew-bundle.tar.gz \
-            ${{ steps.acct.outputs.args }} \
+            "${PM_ARGS[@]}" \
             ${{ steps.create_ew.outputs.ew_id }}
         
 
@@ -150,7 +155,6 @@ jobs:
           GROUP_ID: ${{ steps.cfg.outputs.groupId }}
           PRODUCT_ID: ${{ steps.cfg.outputs.productId }}
           EDGE_HOSTNAME: ${{ steps.cfg.outputs.edge_hostname }}
-          ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
         run: |
           set -euo pipefail
 
@@ -218,7 +222,6 @@ jobs:
           ORIGIN_HOST: ${{ steps.cfg.outputs.origin_host }}
           SEND_HOST_HEADER: ${{ steps.cfg.outputs.harper_host }}
           NETWORK: ${{ steps.cfg.outputs.network }}
-          ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
         run: |
           set -euo pipefail
 
@@ -329,7 +332,6 @@ jobs:
           EDGE_HOSTNAME: ${{ steps.cfg.outputs.edge_hostname }}
           CNAME_TARGET: ${{ steps.cfg.outputs.cname_target }}
           NETWORK: ${{ steps.cfg.outputs.network }}
-          ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
         run: |
           set -euo pipefail
 
@@ -368,7 +370,6 @@ jobs:
         env:
           PROP_ID: ${{ steps.create_property.outputs.prop_id }}
           PROP_VER: ${{ steps.create_property.outputs.prop_ver }}
-          ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
         run: |
           set -euo pipefail
 
