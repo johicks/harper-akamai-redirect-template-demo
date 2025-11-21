@@ -8,7 +8,7 @@ On each request, an EdgeWorker calls Harper; if Harper returns a redirect URL, t
 
 ## Architecture
 
-> Replace these image paths with real diagrams as needed.
+> TODO: Replace Images
 
 ![High-level redirect flow](https://placehold.co/800x260?text=High-level+redirect+flow)
 
@@ -18,23 +18,22 @@ On each request, an EdgeWorker calls Harper; if Harper returns a redirect URL, t
 
 ## Repository Layout
 
-- `akamai/bootstrap-config.json` – single source of truth for Akamai + Harper settings.
+- `akamai/bootstrap-config.json` – Configuration settings for bootstrap GitHub Actions workflow.
 - `akamai/edgeworker/main.js` – EdgeWorker entrypoint; calls Harper and issues redirects.
-- `akamai/property/harper-redirect-template.v1.default.json` – base Property Manager rules.
-- `.github/workflows/bootstrap-akamai.yml` – GitHub Actions workflow to bootstrap the stack.
-- `redirects/redirects.json` – example redirect definitions expected by Harper.
+- `akamai/property/harper-redirect-template.v1.default.json` – base Akamai Property Manager rules.
+- `.github/workflows/bootstrap-akamai.yml` – GitHub Actions workflow to bootstrap Akamai Edgeworker, Property, and Harper redirect Application
+- `redirects/redirects.json` – Redirects file for Harper Redirect App.
+- `.github/workflows/harper-redirect-update.yml` - Github Actions workflow that uploads redirects.json to Harper Redirect App on repo commit.
 
 ---
 
 ## `akamai/bootstrap-config.json`
 
-Current example:
-
 ```json
 {
   "akamai_account": {
-    "contractId": "C-1ED34DY",
-    "groupId": "265792"
+    "contractId": "",
+    "groupId": ""
   },
   "akamai_edgeworker": {
     "create": true,
@@ -62,7 +61,7 @@ Current example:
 
 | Path              | Description                                      |
 |-------------------|--------------------------------------------------|
-| `akamai_account`  | Contract and group IDs for your Akamai account. |
+| `akamai_account`  | Contract and group ID for your Akamai account. |
 | `akamai_edgeworker` | EdgeWorker creation + Harper base URL.        |
 | `akamai_property` | Property creation and hostname/origin settings. |
 | `harper_app`      | Optional Harper app–specific flags.             |
@@ -72,7 +71,7 @@ Current example:
 | Key         | Example     | Notes                           |
 |-------------|-------------|---------------------------------|
 | `contractId`| `C-1ED34DY` | Contract used by PAPI/PM APIs. |
-| `groupId`   | `265792`    | Group where the property will live. |
+| `groupId`   | `265792`    | Group where the property and Edgeworker will live. |
 
 ### `akamai_edgeworker`
 
