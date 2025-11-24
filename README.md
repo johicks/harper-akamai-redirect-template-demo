@@ -185,7 +185,15 @@ From GitHub:
 2. Click **Run workflow** on the desired branch.
 3. Wait for the job to finish; it will register/upload the EdgeWorker and create/update the property and hostnames on STAGING.
 
-### 6. Test redirects
+### 6. Add 
+
+1. Point a customer hostname to the configured `cnameTarget`/edge hostname.
+2. Request a URL that should redirect, for example:
+
+```sh
+curl -I https://www.example.com/shop/live-shopping
+
+### 7. Test redirects
 
 1. Point a customer hostname to the configured `cnameTarget`/edge hostname.
 2. Request a URL that should redirect, for example:

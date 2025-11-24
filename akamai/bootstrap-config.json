@@ -5,14 +5,14 @@
   },
 
   "akamai_edgeworker": {
-    "create": true,
+    "create": false,
     "name": "harper-redirector-ew",
     "resourceTierId": 200,
     "harperRedirectBaseUrl": "https://harper-redirects.akamaized.net/checkredirect"
   },
 
   "akamai_property": {
-    "create": true,
+    "create": false,
     "productId": "prd_Fresca",
     "network": "enhancedTLS",
     "name": "harper-redirect-ew-subrequests",
@@ -23,6 +23,9 @@
   },
 
   "harper_app": {
-    "uploadRedirectJSON": true
+    "deploy": true,
+    "uploadRedirectJSON": true,
+    "deployUrl": "https://harper-redirects.hicks.harperfabric.com:9925/",
+    "redirectorRepoUrl": "https://github.com/HarperFast/template-redirector"
   }
 }

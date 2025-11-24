@@ -9,6 +9,8 @@ env:
   AKAMAI_CLIENT_TOKEN: ${{ secrets.AKAMAI_CLIENT_TOKEN }}
   AKAMAI_CLIENT_SECRET: ${{ secrets.AKAMAI_CLIENT_SECRET }}
   AKAMAI_ACCESS_TOKEN: ${{ secrets.AKAMAI_ACCESS_TOKEN }}
+  HARBOR_USER: ${{ secrets.HARBOR_USER }}
+  HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
 
 jobs:
   bootstrap:
@@ -86,8 +88,52 @@ jobs:
           echo "harper_host=$(get '.akamai_property.sendHostHeader')" >> $GITHUB_OUTPUT
 
           echo "flag_upload_json=$(get '.harper_app.uploadRedirectJSON')" >> $GITHUB_OUTPUT
+          echo "harper_deploy=$(get '.harper_app.deploy')" >> $GITHUB_OUTPUT
+          echo "harper_deploy_url=$(get '.harper_app.deployUrl')" >> $GITHUB_OUTPUT
+          echo "harper_redirector_repo=$(get '.harper_app.redirectorRepoUrl')" >> $GITHUB_OUTPUT
 
+      - name: Deploy Harper redirector app
+        if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
+        env:
+          HARBOR_USER: ${{ env.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
+          HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
+          HARPER_REDIRECTOR_REPO: ${{ steps.cfg.outputs.harper_redirector_repo }}
+        run: |
+          set -euo pipefail
 
+          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harbor secret::HARBOR_USER or HARBOR_PASSWORD is not set."
+            exit 1
+          fi
+
+          if [ -z "${HARPER_DEPLOY_URL:-}" ]; then
+            echo "::error title=Missing Harper URL::harper_app.deployUrl is empty in akamai/bootstrap-config.json"
+            exit 1
+          fi
+
+          if [ -z "${HARPER_REDIRECTOR_REPO:-}" ]; then
+            echo "::error title=Missing Harper redirector repo::harper_app.redirectorRepoUrl is empty in akamai/bootstrap-config.json"
+            exit 1
+          fi
+
+          echo "Deploying Harper redirector app from '${HARPER_REDIRECTOR_REPO}' to ${HARPER_DEPLOY_URL} using Harper CLI"
+          
+          # Install Harper CLI and app dependencies
+          npm install -g harperdb
+
+          APP_DIR="$RUNNER_TEMP/harper-redirector-app"
+          rm -rf "$APP_DIR"
+          git clone "$HARPER_REDIRECTOR_REPO" "$APP_DIR"
+          cd "$APP_DIR"
+
+          # Configure env for non-interactive deploy
+          export HDB_ADMIN_USERNAME=${HARBOR_USER}
+          export HDB_ADMIN_PASSWORD=${HARBOR_PASSWORD}
+
+          # Run the deploy script defined by the template-redirector app
+          npm run login DB_ADMIN_USERNAME@https://${HARPER_DEPLOY_URL}:9925/
+          npm run deploy
 
       - name: Create EdgeWorker
         id: create_ew
