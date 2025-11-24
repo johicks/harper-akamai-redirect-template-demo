@@ -14,7 +14,7 @@
   "akamai_property": {
     "create": true,
     "productId": "prd_Fresca",
-    "network": "enhancedTLS",    
+    "network": "enhancedTLS",
     "name": "harper-redirect-ew-subrequests",
     "edgeHostname": "harper-redirects.akamaized.net",
     "cnameTarget": "harper-redirects.akamaized.net",

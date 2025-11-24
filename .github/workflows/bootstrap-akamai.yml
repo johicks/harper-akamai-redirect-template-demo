@@ -155,6 +155,7 @@ jobs:
           GROUP_ID: ${{ steps.cfg.outputs.groupId }}
           PRODUCT_ID: ${{ steps.cfg.outputs.productId }}
           EDGE_HOSTNAME: ${{ steps.cfg.outputs.edge_hostname }}
+          NETWORK: ${{ steps.cfg.outputs.network }}
         run: |
           set -euo pipefail
 
@@ -172,7 +173,34 @@ jobs:
           fi
 
           echo "Edge hostname prefix=$PREFIX, suffix=$SUFFIX, productId=$PRODUCT_ID"
-
+          
+          if [ "${NETWORK:-}" = "enhancedTLS" ]; then
+            BODY=$(jq -n \
+            --arg product "$PRODUCT_ID" \
+            --arg prefix "$PREFIX" \
+            --arg suffix "$SUFFIX" \
+            '{
+              productId: $product,
+              domainPrefix: $prefix,
+              domainSuffix: $suffix,
+              ipVersionBehavior: "IPV4",
+              secureNetwork: "SHARED_CERT",
+              secure: "true"
+            }')
+          else
+            BODY=$(jq -n \
+            --arg product "$PRODUCT_ID" \
+            --arg prefix "$PREFIX" \
+            --arg suffix "$SUFFIX" \
+            '{
+              productId: $product,
+              domainPrefix: $prefix,
+              domainSuffix: $suffix,
+              ipVersionBehavior: "IPV4",
+              secureNetwork: "SHARED_CERT"
+            }')
+          fi
+          
           BODY=$(jq -n \
             --arg product "$PRODUCT_ID" \
             --arg prefix "$PREFIX" \

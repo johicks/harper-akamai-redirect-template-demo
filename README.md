@@ -99,8 +99,7 @@ On each request, an EdgeWorker calls Harper; if Harper returns a redirect URL, t
 
 `productId` must be a **valid product** on your Akamai contract (e.g. `prd_Fresca`). The exact list is contract-specific; discover options via:
 
-- Akamai Control Center when creating a property, or
-- PAPI/CLI calls listing products for your contract.
+https://techdocs.akamai.com/property-mgr/reference/id-prefixes#common-product-ids
 
 Use the value that matches the web delivery product you use for standard properties.
 
