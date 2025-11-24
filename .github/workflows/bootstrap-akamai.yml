@@ -117,23 +117,21 @@ jobs:
             exit 1
           fi
 
-          echo "Deploying Harper redirector app from '${HARPER_REDIRECTOR_REPO}' to ${HARPER_DEPLOY_URL} using Harper CLI"
-          
-          # Install Harper CLI and app dependencies
+          echo "Deploying Harper redirector app from '${HARPER_REDIRECTOR_REPO}' to ${HARPER_DEPLOY_URL} using harperdb CLI remote deploy"
+
+          # Install Harper CLI
           npm install -g harperdb
 
-          APP_DIR="$RUNNER_TEMP/harper-redirector-app"
-          rm -rf "$APP_DIR"
-          git clone "$HARPER_REDIRECTOR_REPO" "$APP_DIR"
-          cd "$APP_DIR"
-
-          # Configure env for non-interactive deploy
-          export HDB_ADMIN_USERNAME=${HARBOR_USER}
-          export HDB_ADMIN_PASSWORD=${HARBOR_PASSWORD}
-
-          # Run the deploy script defined by the template-redirector app
-          npm run login DB_ADMIN_USERNAME@https://${HARPER_DEPLOY_URL}:9925/
-          npm run deploy
+          # Use harperdb CLI to deploy the app package directly from GitHub to the remote cluster.
+          # This relies on the 'deploy' command described in the Harper CLI docs.
+          harperdb deploy \
+            project=akamai-redirector \
+            package="${HARPER_REDIRECTOR_REPO}" \
+            target="${HARPER_DEPLOY_URL}" \
+            username="${HARBOR_USER}" \
+            password="${HARBOR_PASSWORD}" \
+            restart=true \
+            replicated=true
 
       - name: Create EdgeWorker
         id: create_ew
