@@ -135,6 +135,31 @@ jobs:
             template="${HARPER_REDIRECTOR_REPO}" \
             replicated:=true
 
+      - name: Restart Harper cluster after deploy
+        if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
+        env:
+          HARBOR_USER: ${{ env.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
+          HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${HARPER_DEPLOY_URL:-}" ]; then
+            echo "::error title=Missing Harper URL for restart::harper_app.deployUrl is empty in akamai/bootstrap-config.json"
+            exit 1
+          fi
+
+          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harbor secret for restart::HARBOR_USER or HARBOR_PASSWORD is not set."
+            exit 1
+          fi
+
+          echo "Restarting Harper cluster at ${HARPER_DEPLOY_URL} via Operations API"
+
+          http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
+            POST "${HARPER_DEPLOY_URL}" \
+            operation=restart_instance
+
       - name: Upload redirects.json to Harper
         if: ${{ steps.cfg.outputs.flag_upload_json == 'true' }}
         env:
