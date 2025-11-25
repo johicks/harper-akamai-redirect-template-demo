@@ -1,33 +1,43 @@
 import { httpRequest } from 'http-request';
+import { logger } from 'log';
 
+const HARPER_TOKEN = '';
+    
 const HARPER_BASE_URL = 'https://YOUR-HARPER-HOST/checkredirect';
 
-/**
- * Main entrypoint for client requests.
- * Calls Harper Redirect API and issues redirect if one is defined.
- */
 export async function onClientRequest(request) {
-  const pathWithQuery = request.path + (request.query ? `?${request.query}` : '');
-  const host = request.host;
+	try {
+		const url = `${HARPER_BASE_URL}/checkredirect?h=${request.host}&path=${request.path}`;
 
-  try {
-    const url = `${HARPER_BASE_URL}?path=${encodeURIComponent(pathWithQuery)}&h=${encodeURIComponent(host)}&ho=1`;
+		const requestHeaders = {
+			Authorization: `Basic ${HARPER_TOKEN}`,
+			'Content-Type': 'application/json',
+			'X-Query-String': request.query,
+		};
 
-    const response = await httpRequest(url);
-    if (!response.ok) return; // No redirect defined by API; request proceeds as normal.
+		const options = {
+			timeout: 250,
+			method: 'GET',
+			headers: requestHeaders,
+		};
 
-    const data = await response.json();
-    const redirectUrl = data.redirect_url;
+		const response = await httpRequest(url, options);
 
-    if (redirectUrl) {
-      request.respondWith(
-        301,
-        { Location: redirectUrl },
-        ''
-      );
-    }
+		if (response.ok) {
+			const data = await response.json();
 
-  } catch (err) {
-    console.log('Redirect check failed:', err.message || err);
-  }
+			const responseHeaders = {
+				Location: data.redirectURL,
+			};
+
+			const body = '{}';
+
+			logger.log(`Redirecting ${request.url} to ${data.redirectURL}`);
+			request.respondWith(data.statusCode, responseHeaders, body);
+		} else {
+			logger.log(`No redirect found for ${request.url}`);
+		}
+	} catch (exception) {
+		logger.log(`Error occured while calling HDB: ${exception.message}`);
+	}
 }

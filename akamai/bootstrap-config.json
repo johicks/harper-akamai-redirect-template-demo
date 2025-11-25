@@ -26,6 +26,7 @@
     "deploy": true,
     "uploadRedirectJSON": true,
     "deployUrl": "https://harper-redirects.hicks.harperfabric.com:9925/",
+    "redirectUploadUrl": "https://harper-redirects.hicks.harperfabric.com/redirect",
     "redirectorRepoUrl": "https://github.com/HarperFast/template-redirector",
     "projectName": "akamai-redirector"
   }
