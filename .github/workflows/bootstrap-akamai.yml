@@ -90,7 +90,6 @@ jobs:
           echo "flag_upload_json=$(get '.harper_app.uploadRedirectJSON')" >> $GITHUB_OUTPUT
           echo "harper_deploy=$(get '.harper_app.deploy')" >> $GITHUB_OUTPUT
           echo "harper_deploy_url=$(get '.harper_app.deployUrl')" >> $GITHUB_OUTPUT
-          echo "harper_redirect_upload_url=$(get '.harper_app.redirectUploadUrl')" >> $GITHUB_OUTPUT
           echo "harper_redirector_repo=$(get '.harper_app.redirectorRepoUrl')" >> $GITHUB_OUTPUT
           echo "harper_project=$(get '.harper_app.projectName')" >> $GITHUB_OUTPUT
 
@@ -129,7 +128,7 @@ jobs:
 
           # Use Harper Fabric Operations API 'deploy_component' to deploy/update the component with a rolling restart
           http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
-            POST "${HARPER_DEPLOY_URL}" \
+            POST "${HARPER_DEPLOY_URL}:9925/" \
             operation=deploy_component \
             project="${HARPER_PROJECT}" \
             package="${HARPER_REDIRECTOR_REPO}" \
@@ -139,28 +138,27 @@ jobs:
       - name: Wait for Harper redirector app to be healthy
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARPER_REDIRECT_UPLOAD_URL: ${{ steps.cfg.outputs.harper_redirect_upload_url }}
+          HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
 
-          if [ -z "${HARPER_REDIRECT_UPLOAD_URL:-}" ]; then
-            echo "::error title=Missing redirect upload URL for health check::harper_app.redirectUploadUrl is empty in akamai/bootstrap-config.json"
+          if [ -z "${HARPER_DEPLOY_URL:-}" ]; then
+            echo "::error title=Missing Harper URL for health check::harper_app.deployUrl is empty in akamai/bootstrap-config.json"
             exit 1
           fi
 
-          BASE_URL="${HARPER_REDIRECT_UPLOAD_URL%/redirect}"
-          HEALTH_URL="${BASE_URL}/redirectmetrics"
+          HEALTH_URL="${HARPER_DEPLOY_URL}/redirectmetrics"
 
-          echo "Waiting for Harper redirector metrics endpoint at ${HEALTH_URL} to return 200"
+          echo "Waiting for Harper redirector metrics endpoint at ${HEALTH_URL} to return 200 (OPTIONS)"
 
           for i in $(seq 1 30); do
-            STATUS=$(http --ignore-stdin --print=Hh GET "${HEALTH_URL}" 2>/dev/null | head -n1 | awk '{print $2}' || true)
+            STATUS=$(http --ignore-stdin --print=Hh OPTIONS "${HEALTH_URL}" 2>/dev/null | head -n1 | awk '{print $2}' || true)
             if [ "${STATUS}" = "200" ]; then
-              echo "Redirector app is healthy (redirectmetrics returned 200)."
+              echo "Redirector app is healthy (redirectmetrics OPTIONS returned 200)."
               exit 0
             fi
-            echo "Attempt ${i}: redirectmetrics status='${STATUS:-none}', retrying in 10s..."
-            sleep 10
+            echo "Attempt ${i}: redirectmetrics OPTIONS status='${STATUS:-none}', retrying in 10s..."\n            sleep 10
+          done
           done
 
           echo "::error title=Redirector app not healthy::redirectmetrics did not return 200 after 30 attempts"
@@ -191,7 +189,7 @@ jobs:
           # Grant read access on the 'redirects' database tables used by the redirector component.
           # If the role already exists, this may return a non-2xx; treat that as a warning, not a hard failure.
           if ! http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
-            POST "${HARPER_DEPLOY_URL}" \
+            POST "${HARPER_DEPLOY_URL}:9925/" \
             operation=add_role \
             role="${ROLE_NAME}" \
             permission:='{"super_user":false,"structure_user":false,"redirects":{"tables":{"rule":{"read":true},"hosts":{"read":true}}}}'; then
@@ -224,7 +222,7 @@ jobs:
           echo "Creating Harper user '${HARPER_EDGE_USERNAME}' with role 'redirects_reader' for EdgeWorker access"
 
           http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
-            POST "${HARPER_DEPLOY_URL}" \
+            POST "${HARPER_DEPLOY_URL}:9925/" \
             operation=add_user \
             role="redirects_reader" \
             username="${HARPER_EDGE_USERNAME}" \
@@ -568,12 +566,12 @@ jobs:
         env:
           HARBOR_USER: ${{ env.HARBOR_USER }}
           HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
-          HARPER_REDIRECT_UPLOAD_URL: ${{ steps.cfg.outputs.harper_redirect_upload_url }}
+          HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
 
-          if [ -z "${HARPER_REDIRECT_UPLOAD_URL:-}" ]; then
-            echo "::error title=Missing Harper redirect upload URL::harper_app.redirectUploadUrl is empty in akamai/bootstrap-config.json"
+          if [ -z "${HARPER_DEPLOY_URL:-}" ]; then
+            echo "::error title=Missing Harper URL for redirect upload::harper_app.deployUrl is empty in akamai/bootstrap-config.json"
             exit 1
           fi
 
@@ -582,9 +580,10 @@ jobs:
             exit 1
           fi
 
-          echo "Uploading redirects/redirects.json to ${HARPER_REDIRECT_UPLOAD_URL} with basic auth"
+          UPLOAD_URL="${HARPER_DEPLOY_URL}/redirect"
+          echo "Uploading redirects/redirects.json to ${UPLOAD_URL} with basic auth"
 
           http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
-            POST "${HARPER_REDIRECT_UPLOAD_URL}" \
+            POST "${UPLOAD_URL}" \
             Content-Type:application/json \
             @redirects/redirects.json
