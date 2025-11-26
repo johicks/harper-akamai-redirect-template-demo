@@ -136,6 +136,36 @@ jobs:
             restart=rolling \
             replicated:=true
 
+      - name: Wait for Harper redirector app to be healthy
+        if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
+        env:
+          HARPER_REDIRECT_UPLOAD_URL: ${{ steps.cfg.outputs.harper_redirect_upload_url }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${HARPER_REDIRECT_UPLOAD_URL:-}" ]; then
+            echo "::error title=Missing redirect upload URL for health check::harper_app.redirectUploadUrl is empty in akamai/bootstrap-config.json"
+            exit 1
+          fi
+
+          BASE_URL="${HARPER_REDIRECT_UPLOAD_URL%/redirect}"
+          HEALTH_URL="${BASE_URL}/redirectmetrics"
+
+          echo "Waiting for Harper redirector metrics endpoint at ${HEALTH_URL} to return 200"
+
+          for i in $(seq 1 30); do
+            STATUS=$(http --ignore-stdin --print=Hh GET "${HEALTH_URL}" 2>/dev/null | head -n1 | awk '{print $2}' || true)
+            if [ "${STATUS}" = "200" ]; then
+              echo "Redirector app is healthy (redirectmetrics returned 200)."
+              exit 0
+            fi
+            echo "Attempt ${i}: redirectmetrics status='${STATUS:-none}', retrying in 10s..."
+            sleep 10
+          done
+
+          echo "::error title=Redirector app not healthy::redirectmetrics did not return 200 after 30 attempts"
+          exit 1
+
       - name: Create Harper redirects read-only role
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
@@ -158,17 +188,17 @@ jobs:
           ROLE_NAME="redirects_reader"
           echo "Ensuring Harper role '${ROLE_NAME}' exists with read access on redirects database"
 
-          # Grant read access on all tables in the 'redirects' database.
+          # Grant read access on the 'redirects' database tables used by the redirector component.
           # If the role already exists, this may return a non-2xx; treat that as a warning, not a hard failure.
           if ! http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
             POST "${HARPER_DEPLOY_URL}" \
             operation=add_role \
             role="${ROLE_NAME}" \
-            permission:='{"super_user":false,"structure_user":false,"redirects":{"tables":{"*":{"read":true}}}}'; then
+            permission:='{"super_user":false,"structure_user":false,"redirects":{"tables":{"rule":{"read":true},"hosts":{"read":true}}}}'; then
             echo "::warning::add_role for '${ROLE_NAME}' may have failed (role may already exist)."
           fi
 
-      - name: Create Harper redirects API user and inject HARPER_TOKEN
+      - name: Create Harper redirects API user and inject HARPER_TOKEN into Edgeworker
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
           HARBOR_USER: ${{ env.HARBOR_USER }}
