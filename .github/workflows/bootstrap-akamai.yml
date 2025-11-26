@@ -136,7 +136,7 @@ jobs:
             restart=rolling \
             replicated:=true
 
-      - name: Restart Harper cluster after deploy
+      - name: Create Harper redirects read-only role
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
           HARBOR_USER: ${{ env.HARBOR_USER }}
@@ -146,20 +146,66 @@ jobs:
           set -euo pipefail
 
           if [ -z "${HARPER_DEPLOY_URL:-}" ]; then
-            echo "::error title=Missing Harper URL for restart::harper_app.deployUrl is empty in akamai/bootstrap-config.json"
+            echo "::error title=Missing Harper URL for role::harper_app.deployUrl is empty in akamai/bootstrap-config.json"
             exit 1
           fi
 
           if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
-            echo "::error title=Missing Harbor secret for restart::HARBOR_USER or HARBOR_PASSWORD is not set."
+            echo "::error title=Missing Harbor secret for role::HARBOR_USER or HARBOR_PASSWORD is not set."
             exit 1
           fi
 
-          echo "Restarting Harper cluster at ${HARPER_DEPLOY_URL} via Operations API"
+          ROLE_NAME="redirects_reader"
+          echo "Ensuring Harper role '${ROLE_NAME}' exists with read access on redirects database"
+
+          # Grant read access on all tables in the 'redirects' database.
+          # If the role already exists, this may return a non-2xx; treat that as a warning, not a hard failure.
+          if ! http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
+            POST "${HARPER_DEPLOY_URL}" \
+            operation=add_role \
+            role="${ROLE_NAME}" \
+            permission:='{"super_user":false,"structure_user":false,"redirects":{"tables":{"*":{"read":true}}}}'; then
+            echo "::warning::add_role for '${ROLE_NAME}' may have failed (role may already exist)."
+          fi
+
+      - name: Create Harper redirects API user and inject HARPER_TOKEN
+        if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
+        env:
+          HARBOR_USER: ${{ env.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
+          HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${HARPER_DEPLOY_URL:-}" ]; then
+            echo "::error title=Missing Harper URL for user::harper_app.deployUrl is empty in akamai/bootstrap-config.json"
+            exit 1
+          fi
+
+          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harbor secret for user::HARBOR_USER or HARBOR_PASSWORD is not set."
+            exit 1
+          fi
+
+          # Generate a unique username + strong password for the EdgeWorker token
+          HARPER_EDGE_USERNAME="edge_redirect_$(date +%s)"
+          HARPER_EDGE_PASSWORD="$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 24)"
+
+          echo "Creating Harper user '${HARPER_EDGE_USERNAME}' with role 'redirects_reader' for EdgeWorker access"
 
           http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
             POST "${HARPER_DEPLOY_URL}" \
-            operation=restart_instance
+            operation=add_user \
+            role="redirects_reader" \
+            username="${HARPER_EDGE_USERNAME}" \
+            password="${HARPER_EDGE_PASSWORD}" \
+            active:=true
+
+          # Base64-encode username:password for Basic auth token
+          HARPER_BASIC_TOKEN=$(printf '%s:%s' "${HARPER_EDGE_USERNAME}" "${HARPER_EDGE_PASSWORD}" | base64 | tr -d '\n')
+
+          # Inject the HARPER_TOKEN constant into the EdgeWorker source
+          sed -i "s|const HARPER_TOKEN = '.*';|const HARPER_TOKEN = '${HARPER_BASIC_TOKEN}';|" akamai/edgeworker/main.js
       
 
       - name: Create EdgeWorker
