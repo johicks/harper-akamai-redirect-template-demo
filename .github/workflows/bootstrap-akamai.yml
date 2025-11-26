@@ -125,14 +125,15 @@ jobs:
             exit 1
           fi
 
-          echo "Deploying Harper redirector app '${HARPER_PROJECT}' from template '${HARPER_REDIRECTOR_REPO}' via Harper Fabric Operations API"
+          echo "Deploying Harper redirector app '${HARPER_PROJECT}' from package '${HARPER_REDIRECTOR_REPO}' via deploy_component (rolling restart)"
 
-          # Use Harper Fabric Operations API 'add_component' to create/update the component
+          # Use Harper Fabric Operations API 'deploy_component' to deploy/update the component with a rolling restart
           http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
             POST "${HARPER_DEPLOY_URL}" \
-            operation=add_component \
+            operation=deploy_component \
             project="${HARPER_PROJECT}" \
-            template="${HARPER_REDIRECTOR_REPO}" \
+            package="${HARPER_REDIRECTOR_REPO}" \
+            restart=rolling \
             replicated:=true
 
       - name: Restart Harper cluster after deploy
@@ -159,32 +160,7 @@ jobs:
           http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
             POST "${HARPER_DEPLOY_URL}" \
             operation=restart_instance
-
-      - name: Upload redirects.json to Harper
-        if: ${{ steps.cfg.outputs.flag_upload_json == 'true' }}
-        env:
-          HARBOR_USER: ${{ env.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
-          HARPER_REDIRECT_UPLOAD_URL: ${{ steps.cfg.outputs.harper_redirect_upload_url }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${HARPER_REDIRECT_UPLOAD_URL:-}" ]; then
-            echo "::error title=Missing Harper redirect upload URL::harper_app.redirectUploadUrl is empty in akamai/bootstrap-config.json"
-            exit 1
-          fi
-
-          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
-            echo "::error title=Missing Harbor secret for redirect upload::HARBOR_USER or HARBOR_PASSWORD is not set."
-            exit 1
-          fi
-
-          echo "Uploading redirects/redirects.json to ${HARPER_REDIRECT_UPLOAD_URL} with basic auth"
-
-          http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
-            POST "${HARPER_REDIRECT_UPLOAD_URL}" \
-            Content-Type:application/json \
-            @redirects/redirects.json
+      
 
       - name: Create EdgeWorker
         id: create_ew
@@ -509,3 +485,30 @@ jobs:
             --propver "$PROP_VER" \
             --network STAGING \
             "${PM_ARGS[@]}"
+      
+          
+      - name: Upload redirects.json to Harper
+        if: ${{ steps.cfg.outputs.flag_upload_json == 'true' }}
+        env:
+          HARBOR_USER: ${{ env.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
+          HARPER_REDIRECT_UPLOAD_URL: ${{ steps.cfg.outputs.harper_redirect_upload_url }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${HARPER_REDIRECT_UPLOAD_URL:-}" ]; then
+            echo "::error title=Missing Harper redirect upload URL::harper_app.redirectUploadUrl is empty in akamai/bootstrap-config.json"
+            exit 1
+          fi
+
+          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harbor secret for redirect upload::HARBOR_USER or HARBOR_PASSWORD is not set."
+            exit 1
+          fi
+
+          echo "Uploading redirects/redirects.json to ${HARPER_REDIRECT_UPLOAD_URL} with basic auth"
+
+          http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
+            POST "${HARPER_REDIRECT_UPLOAD_URL}" \
+            Content-Type:application/json \
+            @redirects/redirects.json
