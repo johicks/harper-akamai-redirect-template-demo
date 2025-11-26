@@ -149,7 +149,7 @@ jobs:
 
           HEALTH_URL="${HARPER_DEPLOY_URL}/redirectmetrics"
 
-          echo "Waiting for Harper redirector metrics endpoint at ${HEALTH_URL} to return 200 (OPTIONS)"
+          echo "Waiting for Harper redirector metrics endpoint at ${HEALTH_URL} to return 2XX (OPTIONS)"
 
           for i in $(seq 1 30); do
             # Use only response headers (-p h) so the first line is 'HTTP/1.1 <code> ...'
