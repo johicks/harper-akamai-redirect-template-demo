@@ -64,7 +64,7 @@ jobs:
       - name: Load Akamai config
         id: cfg
         run: |
-          FILE="akamai/bootstrap-config.json"
+          FILE="bootstrap-config.json"
           jq -e . "$FILE" >/dev/null || { echo "Invalid JSON $FILE"; exit 1; }
 
           # Basic lookups (quote-safe; empty => '')
@@ -587,4 +587,4 @@ jobs:
           http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
             POST "${UPLOAD_URL}" \
             Content-Type:application/json \
-            @redirects/redirects.json
+            @harper-redirects/redirects.json

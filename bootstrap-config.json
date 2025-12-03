@@ -18,8 +18,8 @@
     "name": "harper-redirect-ew-subrequests",
     "edgeHostname": "harper-redirects.akamaized.net",
     "cnameTarget": "harper-redirects.akamaized.net",
-    "originHostname": "harper.staging.example.com",
-    "sendHostHeader": "harper.staging.example.com"
+    "originHostname": "harper-redirects.hicks.harperfabric.com",
+    "sendHostHeader": "harper-redirects.hicks.harperfabric.com"
   },
 
   "harper_app": {
