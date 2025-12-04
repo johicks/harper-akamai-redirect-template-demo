@@ -257,6 +257,9 @@ jobs:
             --jsonout \
             "${PM_ARGS[@]}" 1>"$OUT" 2>"$ERR"
 
+          cat "$RUNNER_TEMP/ew.err"
+          cat "$RUNNER_TEMP/ew.json"
+
           # strip everything before the first '{' then parse
           EW_ID=$(sed -e '1s/^[^{]*//' "$OUT" | jq -r '.data[0].edgeWorkerId')
 
