@@ -6,8 +6,6 @@ Instead of hardcoding redirects in Akamai Property Manager or managing EdgeKV st
 
 ## Architecture
 
-The traffic flow is designed to minimize latency while centralizing logic outside of the CDN configuration.
-
 ```mermaid
 sequenceDiagram
     participant User
