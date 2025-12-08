@@ -210,7 +210,7 @@ The workflow is a manual dispatch process. When triggered, it performs the follo
     * Deploys the specified redirector application to your Harper instance.
     * Waits for the application to report a healthy status.
     * Ensures a `read_only_user` role exists.
-    * **Security Step**: Generates a random username and password, creates this user in HarperDB, and base64 encodes the credentials.
+    * Generates a username and password, creates this user in HarperDB, assigns the `read_only_user` role, and base64 encodes the credentials.
 2.  **EdgeWorker Build**:
     * Injects the base64 Harper credential token into `main.js`.
     * Injects the Harper Base URL into `main.js`.
@@ -222,7 +222,7 @@ The workflow is a manual dispatch process. When triggered, it performs the follo
     * Updates the hostname mappings.
     * Activates the Property on the Staging and Production networks.
 4.  **Data Ingestion**:
-    * Uploads the contents of `redirects/redirects.json` to the HarperDB instance to populate initial redirect rules..
+    * Uploads the contents of `redirects/redirects.json` to the HarperDB instance to populate initial redirect rules.
 
 ### Trigger Workflow
 
