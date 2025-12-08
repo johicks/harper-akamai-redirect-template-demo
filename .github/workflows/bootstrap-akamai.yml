@@ -3,18 +3,11 @@ name: Bootstrap Akamai Redirect Stack
 on:
   workflow_dispatch:
 
-env:
-  ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
-  AKAMAI_HOST: ${{ secrets.AKAMAI_HOST }}
-  AKAMAI_CLIENT_TOKEN: ${{ secrets.AKAMAI_CLIENT_TOKEN }}
-  AKAMAI_CLIENT_SECRET: ${{ secrets.AKAMAI_CLIENT_SECRET }}
-  AKAMAI_ACCESS_TOKEN: ${{ secrets.AKAMAI_ACCESS_TOKEN }}
-  HARBOR_USER: ${{ secrets.HARBOR_USER }}
-  HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
+    env:
+      ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
 
     steps:
       - name: Checkout repository
@@ -29,6 +22,11 @@ jobs:
           akamai install property-manager
 
       - name: Configure Akamai CLI credentials
+        env:
+          AKAMAI_HOST: ${{ secrets.AKAMAI_HOST }}
+          AKAMAI_CLIENT_TOKEN: ${{ secrets.AKAMAI_CLIENT_TOKEN }}
+          AKAMAI_CLIENT_SECRET: ${{ secrets.AKAMAI_CLIENT_SECRET }}
+          AKAMAI_ACCESS_TOKEN: ${{ secrets.AKAMAI_ACCESS_TOKEN }}
         run: |
           # Fail if any required secrets are missing/empty
           missing=()
@@ -97,10 +95,8 @@ jobs:
       - name: Deploy Harper redirector app
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARBOR_USER: ${{ env.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
-          HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
-          HARPER_REDIRECTOR_REPO: ${{ steps.cfg.outputs.harper_redirector_repo }}
+          HARBOR_USER: ${{ secrets.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
           HARPER_PROJECT: ${{ steps.cfg.outputs.harper_project }}
         run: |
           set -euo pipefail
@@ -169,8 +165,6 @@ jobs:
       - name: Create Harper redirects read-only role
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARBOR_USER: ${{ env.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
@@ -201,8 +195,8 @@ jobs:
       - name: Create Harper redirects API user and inject HARPER_TOKEN into Edgeworker
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARBOR_USER: ${{ env.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
+          HARBOR_USER: ${{ secrets.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
@@ -580,8 +574,8 @@ jobs:
       - name: Upload redirects.json to Harper
         if: ${{ steps.cfg.outputs.flag_upload_json == 'true' }}
         env:
-          HARBOR_USER: ${{ env.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ env.HARBOR_PASSWORD }}
+          HARBOR_USER: ${{ secrets.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
