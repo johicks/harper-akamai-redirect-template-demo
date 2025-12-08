@@ -290,7 +290,7 @@ jobs:
             ${{ steps.create_ew.outputs.ew_id }}
         
 
-      - name: Activate EW on staging
+      - name: Activate EW on staging & prod
         if: ${{ steps.cfg.outputs.ew_create == 'true' }}
         run: |
           
@@ -302,6 +302,11 @@ jobs:
           
           akamai edgeworkers activate "${{ steps.create_ew.outputs.ew_id }}" \
             staging \
+            0.1 \
+            "${PM_ARGS[@]}"
+      
+          akamai edgeworkers activate "${{ steps.create_ew.outputs.ew_id }}" \
+            production \
             0.1 \
             "${PM_ARGS[@]}"
       
@@ -539,7 +544,7 @@ jobs:
             "${PM_ARGS[@]}"
           
           
-      - name: Activate property on staging
+      - name: Activate property on staging & prod
         if: ${{ steps.cfg.outputs.prop_create == 'true' && steps.cfg.outputs.hostname_create == 'true'}}
         env:
           PROP_ID: ${{ steps.create_property.outputs.prop_id }}
@@ -562,6 +567,13 @@ jobs:
             -p "$PROP_ID" \
             --propver "$PROP_VER" \
             --network STAGING \
+            "${PM_ARGS[@]}"
+      
+          echo "Activating property '$PROP_ID' version '$PROP_VER' on PRODUCTION"
+          akamai property-manager activate-version \
+            -p "$PROP_ID" \
+            --propver "$PROP_VER" \
+            --network PRODUCTION \
             "${PM_ARGS[@]}"
       
           
