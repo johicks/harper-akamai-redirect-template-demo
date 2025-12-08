@@ -247,4 +247,4 @@ A separate workflow is provided to update redirects in HarperDB. To trigger the 
 
 ### Update Edgeworker
 
-A separate workflow is provided to update the Edgeworker. To trigger the workflow, simple modify `main.js` and `bundle.json` and push the changes to your repository. The workflow will automatically detect the changes and update the Edgeworker in Akamai staging.
+A separate workflow is provided to update the Edgeworker. To trigger the workflow, simply modify `main.js` and `bundle.json` and push the changes to your repository. The workflow will automatically detect the changes and update the Edgeworker in Akamai staging.
