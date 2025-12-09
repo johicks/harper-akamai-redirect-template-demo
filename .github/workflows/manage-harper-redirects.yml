@@ -17,30 +17,11 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Check if Bootstrap has run
-        id: check_bootstrap
-        run: |
-          echo "Checking for successful bootstrap runs..."
-          # Fetch successful runs of bootstrap-akamai.yml
-          count=$(gh run list --workflow bootstrap-akamai.yml --status success --json status | jq length)
-          
-          if [ "$count" -gt 0 ]; then
-            echo "Bootstrap has run successfully."
-            echo "bootstrapped=true" >> $GITHUB_OUTPUT
-          else
-            echo "Bootstrap has NOT run successfully. Skipping update."
-            echo "bootstrapped=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Install dependencies
-        if: steps.check_bootstrap.outputs.bootstrapped == 'true'
         run: |
-          sudo apt-get update
           sudo apt-get install -y jq httpie
 
       - name: Load Configuration
-        id: config
-        if: steps.check_bootstrap.outputs.bootstrapped == 'true'
         run: |
           FILE="bootstrap-config.json"
           if [ ! -f "$FILE" ]; then
@@ -59,7 +40,6 @@ jobs:
           echo "deployUrl=$deployUrl" >> $GITHUB_OUTPUT
 
       - name: Sync Deletions
-        if: steps.check_bootstrap.outputs.bootstrapped == 'true'
         env:
           HARPER_DEPLOY_URL: ${{ steps.config.outputs.deployUrl }}
           HARBOR_USER: ${{ secrets.HARBOR_USER }}
@@ -147,7 +127,6 @@ jobs:
           python3 sync_deletions.py
 
       - name: Upload Redirects
-        if: steps.check_bootstrap.outputs.bootstrapped == 'true'
         env:
           HARBOR_USER: ${{ secrets.HARBOR_USER }}
           HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
