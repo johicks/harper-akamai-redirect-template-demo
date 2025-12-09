@@ -14,7 +14,7 @@
 		{
 			"utcStartTime": "",
 			"utcEndTime": "",
-			"path": "/shop/widgets",
+			"path": "/shop/v2/widgets",
 			"host": "",
 			"version": "0",
 			"redirectURL": "/s/widgets",
