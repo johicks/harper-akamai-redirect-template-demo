@@ -278,4 +278,4 @@ A separate workflow is provided to update the Edgeworker. To trigger the workflo
 > [!NOTE]
 > * This workflow requires that you have the `EDGEWORKER_ID` variable set in your repository settings.
 > * This workflow requires that you have the `HARPER_TOKEN` secret set in your repository settings.
-> You may gather these values from Akamai Control Center by viewing your Edgeworker in the Hamburger Menu > Edgeworkers application.
+> * You may gather these values from Akamai Control Center by viewing your Edgeworker in the Hamburger Menu > Edgeworkers application.
