@@ -22,6 +22,7 @@ jobs:
           sudo apt-get install -y jq httpie
 
       - name: Load Configuration
+        id: config
         run: |
           FILE="bootstrap-config.json"
           if [ ! -f "$FILE" ]; then
