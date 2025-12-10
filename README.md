@@ -161,6 +161,7 @@ The bootstrap workflow is controlled by `bootstrap-config.json`. You must custom
 
 To define redirects, create or edit any `.json` file within the `harper-redirects/` directory. You can create multiple files to organize your redirects (e.g., `campaigns.json`, `legacy.json`).
 
+> [!TIP]
 > To ensure your Pull Requests remain readable and your Git performance stays high, we recommend keeping individual JSON files under **50,000 records** (or roughly 10MB).
 > 
 > *   **Reviewable Diffs**: Smaller files allow GitHub to load diffs quickly, making deletions and changes easy to audit.
@@ -261,6 +262,7 @@ The workflow detects which files were changed and for each file:
 
 This multi-file approach allows you to organize massive numbers of redirects (e.g., by campaign, region, or legacy site) while ensuring HarperDB remains perfectly in sync with your repository as the source of truth.
 
+> [!TIP]
 > To ensure your Pull Requests remain readable and your Git performance stays high, we recommend keeping individual JSON files under **50,000 records** (or roughly 10MB).
 > 
 > *   **Reviewable Diffs**: Smaller files allow GitHub to load diffs quickly, making deletions and changes easy to audit.
