@@ -107,11 +107,14 @@ jobs:
           set -e
           
           # Clean up output: strip everything before the first '{' (if it's an object) or '[' (if it's an array)
-          # The error logs showed text appearing before JSON.
-          sed -i 's/^[^{]*//' "$OUT"
+          # We use a character class [^{[] to match anything that is neither { nor [.
+          # Note: In regex, [^{[] means "not { and not [".
+          sed -i 's/^[^[{]*//' "$OUT"
           
           # Extract latest version.
-          LATEST_VERSION=$(cat "$OUT" | jq -r '[.data[].version] | sort_by(split(".") | map(tonumber)) | last // empty')
+          # We append "|| true" so that if jq fails (e.g. bad JSON), the script continues to the error check below
+          # which prints the debug info.
+          LATEST_VERSION=$(cat "$OUT" | jq -r '[.data[].version] | sort_by(split(".") | map(tonumber)) | last // empty' || true)
           
           if [ -z "$LATEST_VERSION" ]; then
              echo "::error::Could not parse latest version from Akamai CLI output."
