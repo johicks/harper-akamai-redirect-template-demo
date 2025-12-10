@@ -168,17 +168,7 @@ To define redirects, create or edit any `.json` file within the `harper-redirect
 > *   **Reviewable Diffs**: Smaller files allow GitHub to load diffs quickly, making deletions and changes easy to audit.
 > *   **Performance**: The automated workflow processes files faster when they are split logically rather than one monolithic file.
 
-| Name | Required | Description |
-| :--- | :--- | :--- | 
-| `utcStartTime` | No | Time in unix epoch seconds to start applying the rule. |
-| `utcEndTime` | No | Time in unix epoch seconds to stop applying the rule. |
-| `path` | Yes | The path to match on. This can be the path element of the URL or a full url. If it is the full URL the host will populate the host field below. |
-| `redirectURL` | Yes | The path or URL to redirect to. |
-| `host` | No | The host to match on as well as the path. If empty, this rule can apply to any host. See ho below. |
-| `version` | No | Defaults to the current active version. The version that applies to this rule. See the version table below. |
-| `operations` | No | Special operation on the incoming / outgoing path (See Harper documentation). |
-| `statusCode` | Yes | HTTP status code for the redirect (default: 301). |
-| `regex` | No | 1 == path is a regex. Default is 0. |
+### Redirect JSON Format
 
 ```json
 {
@@ -197,6 +187,20 @@ To define redirects, create or edit any `.json` file within the `harper-redirect
 	]
 }
 ```
+
+| Name | Required | Description |
+| :--- | :--- | :--- | 
+| `utcStartTime` | No | Time in unix epoch seconds to start applying the rule. |
+| `utcEndTime` | No | Time in unix epoch seconds to stop applying the rule. |
+| `path` | Yes | The path to match on. This can be the path element of the URL or a full url. If it is the full URL the host will populate the host field below. |
+| `redirectURL` | Yes | The path or URL to redirect to. |
+| `host` | No | The host to match on as well as the path. If empty, this rule can apply to any host. See ho below. |
+| `version` | No | Defaults to the current active version. The version that applies to this rule. See the version table below. |
+| `operations` | No | Special operation on the incoming / outgoing path (See Harper documentation). |
+| `statusCode` | Yes | HTTP status code for the redirect (default: 301). |
+| `regex` | No | 1 == path is a regex. Default is 0. |
+
+
 * Further details on the format can be found in Harpers GitHub: https://github.com/HarperFast/template-redirector
 
 ## 6. Commit and Push 
