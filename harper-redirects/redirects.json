@@ -10,6 +10,17 @@
 			"operations": "",
 			"statusCode": "301",
 			"regex": 0
+		},
+		{
+			"utcStartTime": "",
+			"utcEndTime": "",
+			"path": "/shop/live-shopping2",
+			"host": "",
+			"version": "0",
+			"redirectURL": "/s/events2",
+			"operations": "",
+			"statusCode": "301",
+			"regex": 0
 		}
 	]
 }
