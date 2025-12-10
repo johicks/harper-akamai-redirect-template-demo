@@ -94,7 +94,7 @@ sequenceDiagram
    * Grab cluster URL and superuser credentials
 
 > [!NOTE]
-> If you wish to deploy your Harper cluster on Akamai, please work with your Akamai and Harper representative to have your Fabric account designated to use Akamai's Compute Cloud.
+> If you wish to deploy your Harper cluster on Akamai, please work with your Akamai and Harper representative to have your Fabric account designated to use Akamai's Compute Cloud prior to cluster creation.
 
 ## 2. Clone or Fork Repository
 
