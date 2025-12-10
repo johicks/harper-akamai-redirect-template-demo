@@ -16,7 +16,7 @@ export async function onClientRequest(request) {
 		};
 
 		const options = {
-			timeout: 235,
+			timeout: 225,
 			method: 'GET',
 			headers: requestHeaders,
 		};
