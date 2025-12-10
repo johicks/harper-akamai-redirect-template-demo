@@ -6,10 +6,8 @@ on:
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
-    permissions: write-all
     env:
       ACCOUNT_SWITCH_KEY: ${{ vars.ACCOUNT_SWITCH_KEY }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -238,15 +236,6 @@ jobs:
 
           # Inject the HARPER_TOKEN constant into the EdgeWorker source
           sed -i "s|const HARPER_TOKEN = '.*';|const HARPER_TOKEN = '${HARPER_BASIC_TOKEN}';|" akamai/edgeworker/main.js
-
-          # Attempt to save HARPER_BASIC_TOKEN to GitHub Secrets
-          # Note: default GITHUB_TOKEN cannot usually write secrets. A PAT (MY_PAT) might be needed.
-          if command -v gh >/dev/null; then
-             echo "Saving HARPER_TOKEN secret..."
-             echo "$HARPER_BASIC_TOKEN" | gh secret set HARPER_TOKEN --body - || echo "::warning::Failed to set HARPER_TOKEN secret. default GITHUB_TOKEN often cannot write secrets. Consider secrets: write or using a PAT."
-          else
-             echo "::warning::gh CLI not found, skipping HARPER_TOKEN secret save."
-          fi
       
 
       - name: Create EdgeWorker
@@ -275,15 +264,6 @@ jobs:
 
           [ -n "$EW_ID" ] || { echo "::error::edgeWorkerId not found"; echo "stdout:"; cat "$OUT"; echo "stderr:"; cat "$ERR"; exit 1; }
           echo "ew_id=$EW_ID" >> "$GITHUB_OUTPUT"
-
-          # Attempt to save EW_ID to GitHub Variables
-          # Note: This requires the GITHUB_TOKEN to have permission to write variables, or use a PAT.
-          if command -v gh >/dev/null; then
-            echo "Saving EDGEWORKER_ID variable..."
-            echo "$EW_ID" | gh variable set EDGEWORKER_ID --body - || echo "::warning::Failed to set EDGEWORKER_ID variable. Ensure GITHUB_TOKEN has permissions."
-          else
-             echo "::warning::gh CLI not found, skipping EDGEWORKER_ID variable save."
-          fi
 
 
       - name: Inject HARPER_BASE_URL into EdgeWorker

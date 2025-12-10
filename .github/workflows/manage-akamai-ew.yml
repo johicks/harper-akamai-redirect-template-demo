@@ -55,11 +55,11 @@ jobs:
       - name: Check for required variables
         run: |
           if [ -z "${EDGEWORKER_ID}" ]; then
-            echo "::error::EDGEWORKER_ID variable is missing. It should have been saved by the bootstrap workflow."
+            echo "::error::EDGEWORKER_ID variable is missing. You need to create this variable in the repository settings."
             exit 1
           fi
           if [ -z "${HARPER_TOKEN}" ]; then
-            echo "::error::HARPER_TOKEN secret is missing. It should have been saved by the bootstrap workflow."
+            echo "::error::HARPER_TOKEN secret is missing. You need to create this secret in the repository settings."
             exit 1
           fi
 
@@ -75,14 +75,6 @@ jobs:
 
       - name: Inject Configuration into EdgeWorker
         run: |
-          # Inject HARPER_TOKEN
-          # We use a secure way to sed by passing env var if possible, but basic sed works for simple replacement if we are careful.
-          # The placeholder is: const HARPER_TOKEN = '';
-          # We replaced it in bootstrap, but here we are checking out fresh code from repo, so it is the template placeholder.
-          
-          # Check if the placeholder exists or if it was committed differently.
-          # The repo file likely has `const HARPER_TOKEN = '';` or similar.
-          
           # Inject HARPER_TOKEN
           sed -i "s|const HARPER_TOKEN = '.*';|const HARPER_TOKEN = '${HARPER_TOKEN}';|" akamai/edgeworker/main.js
 
@@ -142,6 +134,8 @@ jobs:
           echo "Updated akamai/edgeworker/bundle.json with version $NEW_VERSION"
           cat akamai/edgeworker/bundle.json
 
+          echo "new_ew_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Upload EW bundle
         run: |
           cd akamai/edgeworker
@@ -159,6 +153,8 @@ jobs:
             "$EDGEWORKER_ID"
 
       - name: Activate EW on staging
+        env:
+          NEW_EW_VERSION: ${{ steps.version.outputs.new_ew_version }}
         run: |
           PM_ARGS=()
           if [ -n "${ACCOUNT_SWITCH_KEY:-}" ]; then
@@ -168,5 +164,5 @@ jobs:
           echo "Activating EdgeWorker ID $EDGEWORKER_ID on STAGING..."
           akamai edgeworkers activate "$EDGEWORKER_ID" \
             staging \
-            0.1 \
+            $NEW_EW_VERSION \
             "${PM_ARGS[@]}"

@@ -120,8 +120,8 @@ To run the workflow, you must configure the following Secrets in your GitHub rep
 *Optional:* If you are using a partner account, you may define `ACCOUNT_SWITCH_KEY` as a repository variable.
 
 *Note:* Akamai API credentials should have the following permissions:
-* EdgeWorkers READ-WRITE
-* Property Manager (PAPI) READ-WRITE
+*   EdgeWorkers READ-WRITE
+*   Property Manager (PAPI) READ-WRITE
 
 Harper user should have admin permissions.
 
@@ -203,7 +203,7 @@ To define redirects, create or edit any `.json` file within the `harper-redirect
 | `regex` | No | 1 == path is a regex. Default is 0. |
 
 
-* Further details on the format can be found in Harpers GitHub: https://github.com/HarperFast/template-redirector
+*   Further details on the format can be found in Harpers GitHub: https://github.com/HarperFast/template-redirector
 
 ## 6. Commit and Push 
 
@@ -221,22 +221,22 @@ Commit and push the changes to your repository.
 The workflow is a manual dispatch process. When triggered, it performs the following steps:
 
 1.  **Harper Deployment**:
-    * Deploys the specified redirector application to your Harper cluster.
-    * Waits for the application to report a healthy status.
-    * Ensures a `read_only_user` role exists.
-    * Generates a username and password, creates this user in HarperDB, assigns the `read_only_user` role, and base64 encodes the credentials.
+    *   Deploys the specified redirector application to your Harper cluster.
+    *   Waits for the application to report a healthy status.
+    *   Ensures a `read_only_user` role exists.
+    *   Generates a username and password, creates this user in HarperDB, assigns the `read_only_user` role, and base64 encodes the credentials.
 2.  **EdgeWorker Build**:
-    * Injects the base64 Harper credential token into `main.js`.
-    * Injects the Harper Base URL into `main.js`.
-    * Bundles and uploads the EdgeWorker to Akamai.
-    * Activates the EdgeWorker on the Staging and Production networks.
+    *   Injects the base64 Harper credential token into `main.js`.
+    *   Injects the Harper Base URL into `main.js`.
+    *   Bundles and uploads the EdgeWorker to Akamai.
+    *   Activates the EdgeWorker on the Staging and Production networks.
 3.  **Property Provisioning**:
-    * Creates the Edge Hostname via PAPI (if it does not exist).
-    * Creates or updates the Property configuration based on the local JSON template.
-    * Updates the hostname mappings.
-    * Activates the Property on the Staging and Production networks.
+    *   Creates the Edge Hostname via PAPI (if it does not exist).
+    *   Creates or updates the Property configuration based on the local JSON template.
+    *   Updates the hostname mappings.
+    *   Activates the Property on the Staging and Production networks.
 4.  **Data Ingestion**:
-    * Uploads the contents of `harper-redirects/*.json` to the HarperDB instance to populate initial redirect rules.
+    *   Uploads the contents of `harper-redirects/*.json` to the HarperDB instance to populate initial redirect rules.
 
 ### Trigger Workflow
 
@@ -273,4 +273,9 @@ This multi-file approach allows you to organize massive numbers of redirects (e.
 
 ### Update Edgeworker
 
-A separate workflow is provided to update the Edgeworker. To trigger the workflow, simply modify `main.js` and `bundle.json` and push the changes to your repository. The workflow will automatically detect the changes and update the Edgeworker in Akamai staging.
+A separate workflow is provided to update the Edgeworker. To trigger the workflow, simply modify `main.js` and push the changes to your repository. The workflow will automatically detect the changes, pull the current EW version, increment bundle.json, and deploy the Edgeworker to Akamai staging.
+
+> [!NOTE]
+> * This workflow requires that you have the `EDGEWORKER_ID` variable set in your repository settings.
+> * This workflow requires that you have the `HARPER_TOKEN` secret set in your repository settings.
+> You may gather these values from Akamai Control Center by viewing your Edgeworker in the Hamburger Menu > Edgeworkers application.
