@@ -2,7 +2,7 @@ import { httpRequest } from 'http-request';
 import { logger } from 'log';
 
 const HARPER_TOKEN = '';
-    
+
 const HARPER_BASE_URL = 'https://YOUR-HARPER-HOST/checkredirect';
 
 export async function onClientRequest(request) {
@@ -16,7 +16,7 @@ export async function onClientRequest(request) {
 		};
 
 		const options = {
-			timeout: 250,
+			timeout: 225,
 			method: 'GET',
 			headers: requestHeaders,
 		};
