@@ -49,7 +49,7 @@ sequenceDiagram
 
 * **Infrastructure as Code:** 
   * Includes a GitHub Action Workflow ("Bootstrap Akamai Redirect Stack") that provisions the entire stack (EdgeWorker, Akamai Property, Edge Hostname, Harper Redirect Application, Harper Database role/user).
-  * Supports uploading a `redirects.json` file to populate rules immediately upon deployment. Subsequent commits of redirects.json will be reconciled to Harper using GitHub Actions. This keeps your HarperDB cluster in sync with your redirects.json file, making this repository the source of truth for redirects.
+  * Supports uploading any number of .json files to populate rules immediately upon deployment. Subsequent commits of .json files will be reconciled to Harper using GitHub Actions. This keeps your HarperDB cluster in sync with your .json redirect files, making this repository the source of truth for redirects.
 * **Zero-Trust Setup:** The pipeline automatically generates a strong, unique password for the EdgeWorker, creates a restricted user in HarperDB, and injects the credentials into the EdgeWorker bundle at build time.
 
 ## Repository Structure
