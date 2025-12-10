@@ -3,7 +3,7 @@ name: Manage Harper Redirects
 on:
   push:
     paths:
-      - 'harper-redirects/redirects.json'
+      - 'harper-redirects/*.json'
   workflow_dispatch:
 
 jobs:
@@ -39,13 +39,13 @@ jobs:
           
           echo "deployUrl=$deployUrl" >> $GITHUB_OUTPUT
 
-      - name: Sync Deletions
+      - name: Sync and Upload Redirects
         env:
           HARPER_DEPLOY_URL: ${{ steps.config.outputs.deployUrl }}
           HARBOR_USER: ${{ secrets.HARBOR_USER }}
           HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
         run: |
-          cat <<EOF > sync_deletions.py
+          cat <<EOF > sync_redirects.py
           import os
           import json
           import subprocess
@@ -54,92 +54,90 @@ jobs:
           import ssl
           import base64
 
-          FILE_PATH = 'harper-redirects/redirects.json'
+          REDIRECTS_DIR = 'harper-redirects'
           DEPLOY_URL = os.environ.get('HARPER_DEPLOY_URL')
           HARBOR_USER = os.environ.get('HARBOR_USER')
           HARBOR_PASSWORD = os.environ.get('HARBOR_PASSWORD')
 
-          def get_file_content(commit):
+          def get_git_file_content(commit, filepath):
               try:
-                  cmd = ['git', 'show', f'{commit}:{FILE_PATH}']
+                  cmd = ['git', 'show', f'{commit}:{filepath}']
                   val = subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode('utf-8')
                   return json.loads(val)
               except Exception:
                   return {'data': []}
 
-          def run():
-              if not (DEPLOY_URL and HARBOR_USER and HARBOR_PASSWORD):
-                  print("::error::Missing required environment variables for deletion sync")
-                  exit(1)
+          def get_changed_files():
+              # Detect files changed in the targeted directory
+              cmd = ['git', 'diff', '--name-only', 'HEAD~1', 'HEAD', '--', REDIRECTS_DIR]
+              output = subprocess.check_output(cmd).decode('utf-8')
+              return [f for f in output.splitlines() if f.endswith('.json')]
 
-              print(f"Comparing HEAD to HEAD~1 for {FILE_PATH}...")
+          def sync_file(filepath):
+              print(f"Processing {filepath}...")
               
-              # Load Current (from disk)
+              # 1. Deletions Logic
               try:
-                  with open(FILE_PATH, 'r') as f:
+                  with open(filepath, 'r') as f:
                       current_data = json.load(f).get('data', [])
-              except FileNotFoundError:
-                  print("Current file not found, assuming all deleted or empty.")
+              except (FileNotFoundError, json.JSONDecodeError):
                   current_data = []
 
-              # Load Previous (from git history)
-              previous_data = get_file_content('HEAD~1').get('data', [])
-
+              previous_data = get_git_file_content('HEAD~1', filepath).get('data', [])
+              
               current_paths = {r['path'] for r in current_data}
               to_delete = [r for r in previous_data if r['path'] not in current_paths]
               
-              print(f"Found {len(to_delete)} redirects to delete.")
-
-              if not to_delete:
-                  return
-
+              # Setup Auth
               auth_str = f"{HARBOR_USER}:{HARBOR_PASSWORD}"
               b64_auth = base64.b64encode(auth_str.encode()).decode()
-              
+              headers = {"Authorization": f"Basic {b64_auth}", "Content-Type": "application/json"}
               ctx = ssl.create_default_context()
               ctx.check_hostname = False
               ctx.verify_mode = ssl.CERT_NONE
 
-              headers = {
-                  "Authorization": f"Basic {b64_auth}"
-              }
+              # Execute Deletions
+              if to_delete:
+                  print(f"  Found {len(to_delete)} deletions.")
+                  for item in to_delete:
+                      path = item['path']
+                      url = f"{DEPLOY_URL}/rule/?path={urllib.parse.quote(path)}"
+                      req = urllib.request.Request(url, method='DELETE', headers=headers)
+                      try:
+                          urllib.request.urlopen(req, context=ctx)
+                          # print(f"  Deleted: {path}") # Reduce noise
+                      except Exception as e:
+                          print(f"  ::warning::Failed to delete {path}: {e}")
+              else:
+                  print("  No deletions found.")
 
-              for item in to_delete:
-                  path = item['path']
-                  # DELETE /rule/?path=...
-                  # Ensure path is properly quoted
-                  encoded_path = urllib.parse.quote(path)
-                  url = f"{DEPLOY_URL}/rule/?path={encoded_path}"
-                  
-                  req = urllib.request.Request(url, method='DELETE', headers=headers)
-                  
+              # 2. Upload Logic (Upsert)
+              if current_data:
+                  print(f"  Uploading {len(current_data)} rules from {filepath}...")
+                  url = f"{DEPLOY_URL}/redirect"
+                  # We need to post the whole file content
+                  req = urllib.request.Request(url, method='POST', headers=headers, data=json.dumps({'data': current_data}).encode('utf-8'))
                   try:
-                      print(f"Deleting path: {path}")
                       urllib.request.urlopen(req, context=ctx)
+                      print("  Upload successful.")
                   except Exception as e:
-                      # We log but continue, as requested by user ("scalability issue" concern -> best effort clean up)
-                      print(f"::warning::Failed to delete {path}: {e}")
+                      print(f"  ::error::Failed to upload {filepath}: {e}")
+
+          def run():
+              if not (DEPLOY_URL and HARBOR_USER and HARBOR_PASSWORD):
+                  print("::error::Missing required environment variables")
+                  exit(1)
+
+              changed_files = get_changed_files()
+              if not changed_files:
+                  print("No .json files changed in this commit.")
+                  return
+
+              for f in changed_files:
+                  sync_file(f)
 
           if __name__ == '__main__':
               run()
           EOF
           
-          python3 sync_deletions.py
-
-      - name: Upload Redirects
-        env:
-          HARBOR_USER: ${{ secrets.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-          UPLOAD_URL: ${{ steps.config.outputs.deployUrl }}/redirect
-        run: |
-          if [ -z "$HARBOR_USER" ] || [ -z "$HARBOR_PASSWORD" ]; then
-             echo "::error::Missing HARBOR_USER or HARBOR_PASSWORD secrets"
-             exit 1
-          fi
-
-          echo "Uploading harper-redirects/redirects.json to $UPLOAD_URL"
-          
-          http --ignore-stdin --check-status -a "$HARBOR_USER:$HARBOR_PASSWORD" \
-            POST "$UPLOAD_URL" \
-            Content-Type:application/json \
-            @harper-redirects/redirects.json
+          python3 sync_redirects.py

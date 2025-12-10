@@ -208,7 +208,7 @@ Commit and push the changes to your repository.
 The workflow is a manual dispatch process. When triggered, it performs the following steps:
 
 1.  **Harper Deployment**:
-    * Deploys the specified redirector application to your Harper instance.
+    * Deploys the specified redirector application to your Harper cluster.
     * Waits for the application to report a healthy status.
     * Ensures a `read_only_user` role exists.
     * Generates a username and password, creates this user in HarperDB, assigns the `read_only_user` role, and base64 encodes the credentials.
