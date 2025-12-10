@@ -103,7 +103,7 @@ jobs:
           
           OUT="$RUNNER_TEMP/ew_versions.json"; ERR="$RUNNER_TEMP/ew_versions.err"
           set +e
-          akamai edgeworkers list-versions "$EDGEWORKER_ID" --json "${PM_ARGS[@]}" 1>"$OUT" 2>"$ERR"
+          akamai edgeworkers list-versions "$EDGEWORKER_ID" --jsonout "${PM_ARGS[@]}" 1>"$OUT" 2>"$ERR"
           set -e
           
           # Clean up output: strip everything before the first '{' (if it's an object) or '[' (if it's an array)
