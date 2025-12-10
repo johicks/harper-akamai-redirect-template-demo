@@ -21,6 +21,17 @@
 			"operations": "",
 			"statusCode": "301",
 			"regex": 0
+		},
+		{
+			"utcStartTime": "",
+			"utcEndTime": "",
+			"path": "/shop/widgets3",
+			"host": "",
+			"version": "0",
+			"redirectURL": "/s/widgets3",
+			"operations": "",
+			"statusCode": "301",
+			"regex": 0
 		}
 	]
 }
