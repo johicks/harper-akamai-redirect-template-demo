@@ -92,6 +92,7 @@ sequenceDiagram
    * If needed create Harper Fabric account: [Documentation](https://fabric.harper.fast/#/sign-up)
    * Create cluster in Fabric: [Documentation](https://docs.harperdb.io/docs/getting-started/installation#manage-and-deploy-with-fabric)
    * Grab cluster URL and superuser credentials
+   * [!NOTE] If you wish to deploy your Harper cluster on Akamai, please work with your Akamai and Harper representative to have your Fabric account designated to use Akamai's Compute Cloud.
 
 ## 2. Clone or Fork Repository
 
