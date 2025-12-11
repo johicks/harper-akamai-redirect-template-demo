@@ -5,7 +5,7 @@ import { logger } from 'log';
 const HARPER_TOKEN = '';
 
 // This value is injected by GitHub Actions
-const HARPER_BASE_URL = 'https://YOUR-HARPER-HOST';
+const HARPER_BASE_URL = '';
 
 export async function onClientRequest(request) {
 	try {
