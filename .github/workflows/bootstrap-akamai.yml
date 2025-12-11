@@ -269,7 +269,7 @@ jobs:
       - name: Inject HARPER_BASE_URL into EdgeWorker
         if: ${{ steps.cfg.outputs.ew_create == 'true' }}
         run: |
-          sed -i "s|const HARPER_BASE_URL = 'https://YOUR-HARPER-HOST/checkredirect';|const HARPER_BASE_URL = '${{ steps.cfg.outputs.harper_base_url }}';|" akamai/edgeworker/main.js
+          sed -i "s|const HARPER_BASE_URL = '';|const HARPER_BASE_URL = '${{ steps.cfg.outputs.harper_base_url }}';|" akamai/edgeworker/main.js
 
 
       - name: Upload EW bundle
