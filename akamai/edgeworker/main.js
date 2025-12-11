@@ -1,8 +1,10 @@
 import { httpRequest } from 'http-request';
 import { logger } from 'log';
 
+// This value is injected by GitHub Actions	
 const HARPER_TOKEN = '';
 
+// This value is injected by GitHub Actions
 const HARPER_BASE_URL = 'https://YOUR-HARPER-HOST/checkredirect';
 
 export async function onClientRequest(request) {
@@ -16,7 +18,7 @@ export async function onClientRequest(request) {
 		};
 
 		const options = {
-			timeout: 235,
+			timeout: 250,
 			method: 'GET',
 			headers: requestHeaders,
 		};
