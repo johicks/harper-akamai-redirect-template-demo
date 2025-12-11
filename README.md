@@ -49,8 +49,8 @@ sequenceDiagram
 
 * **Infrastructure as Code:** 
   * Includes a GitHub Action Workflow ("Bootstrap Akamai Redirect Stack") that provisions the entire stack (EdgeWorker, Akamai Property, Edge Hostname, Harper Redirect Application, Harper Database role/user).
-  * Supports uploading any number of .json files to populate rules immediately upon deployment. Subsequent commits of .json files will be reconciled to Harper using GitHub Actions. This keeps your HarperDB cluster in sync with your .json redirect files, making this repository the source of truth for redirects.
-* **Zero-Trust Setup:** The pipeline automatically generates a strong, unique password for the EdgeWorker, creates a restricted user in HarperDB, and injects the credentials into the EdgeWorker bundle at build time.
+  * Supports uploading any number of .json redirect files to populate rules immediately upon deployment. Subsequent commits of .json files will be reconciled to Harper using GitHub Actions. This keeps your HarperDB cluster in sync with your .json redirect files, making this repository the source of truth for redirects.
+* **Secrets Handling:** The pipeline automatically creates an RBAC user in HarperDB with read-only access and injects the credentials into the EdgeWorker bundle at build time.
 
 ## Repository Structure
 ```
@@ -60,6 +60,7 @@ sequenceDiagram
 │   └── workflows
 │       └── bootstrap-akamai.yml                      # GitHub Action Workflow for bootstrapping Akamai Redirect Stack
 │       └── manage-harper-redirects.yml               # GitHub Action Workflow for managing Harper Redirects
+│       └── manage-akamai-ew.yml                      # GitHub Action Workflow for managing Akamai EdgeWorker
 ├── akamai
 │   ├── edgeworker
 │   │   ├── bundle.json                               # Akamai EdgeWorker bundle configuration
@@ -80,12 +81,12 @@ sequenceDiagram
   * Group ID
 * Harper Fabric Account
   * Harper Cluster
-  * Harper Superuser Credentials
-  * Harper URL
+  * Harper Admin Credentials
+  * Harper ClusterURL
 
 ## 1. Gather Prerequisites
 1. Create Akamai API Credentials: [Documentation](https://techdocs.akamai.com/onboard/docs/set-up-identity-and-access-api#4-set-up-authentication-credentials)
-2. Gather Akamai Account Details:
+2. Gather Akamai Account Details from Control Center
    * Contract ID: Hamburger Menu > Account Admin > Contracts
    * Group ID: Hamburger Menu > CDN > Properties > Select Target Group > Group ID is located in the URL '.../groups/{group_id}/properties'
 3. Create Harper Cluster
@@ -114,16 +115,10 @@ To run the workflow, you must configure the following Secrets in your GitHub rep
 | `AKAMAI_CLIENT_TOKEN` | Client Token from your `.edgerc` file. |
 | `AKAMAI_CLIENT_SECRET` | Client Secret from your `.edgerc` file. |
 | `AKAMAI_ACCESS_TOKEN` | Access Token from your `.edgerc` file. |
-| `HARBOR_USER` | Username for HarperDB/Harbor authentication (superuser). |
-| `HARBOR_PASSWORD` | Password for HarperDB/Harbor authentication. |
+| `HARBOR_USER` | Username for HarperDB authentication (admin). |
+| `HARBOR_PASSWORD` | Password for HarperDB authentication. |
 
 *Optional:* If you are using a partner account, you may define `ACCOUNT_SWITCH_KEY` as a repository variable.
-
-*Note:* Akamai API credentials should have the following permissions:
-*   EdgeWorkers READ-WRITE
-*   Property Manager (PAPI) READ-WRITE
-
-Harper user should have admin permissions.
 
 ## 4. Configure Bootstrap Workflow
 
