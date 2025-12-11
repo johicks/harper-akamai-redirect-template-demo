@@ -130,7 +130,7 @@ Harper user should have admin permissions.
 The bootstrap workflow is controlled by `bootstrap-config.json`. You must customize this file before running the workflow to deploy the stack.
 
 > [!NOTE]
-> Most of the values in this file can be left as default. Only the following values should be modified:
+> Most of the values in this file can be left as default. Only the following values need to be modified:
 > * `akamai_account.contractId`
 > * `akamai_account.groupId`
 > * `akamai_edgeworker.harperRedirectBaseUrl`
