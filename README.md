@@ -97,8 +97,8 @@ sequenceDiagram
    * Create cluster in Fabric: [Documentation](https://docs.harperdb.io/docs/getting-started/installation#manage-and-deploy-with-fabric)
    * Retain the Admin credentials and the Application URL found under the Config pane of your cluster for steps 3 and 4.
 
-> [!NOTE]
-> If you wish to deploy your Harper cluster on Akamai, please work with your Akamai and Harper representative to have your Fabric account designated to use Akamai's Compute Cloud prior to cluster creation.
+> [!WARNING]
+> For the best performance, deploying your Harper cluster on Akamai is recommended. This will ensure your HarperDB instances have the lowest possible latency from Akamai's EdgeWorkers. Work with your Akamai and Harper representative to have your Fabric account designated to use Akamai's Compute Cloud prior to cluster creation.
 
 ## 2. Clone or Fork Repository
 
