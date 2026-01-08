@@ -95,16 +95,16 @@ jobs:
       - name: Deploy Harper redirector app
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARBOR_USER: ${{ secrets.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          HARPER_USER: ${{ secrets.HARPER_USER }}
+          HARPER_PASSWORD: ${{ secrets.HARPER_PASSWORD }}
           HARPER_PROJECT: ${{ steps.cfg.outputs.harper_project }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
           HARPER_REDIRECTOR_REPO: ${{ steps.cfg.outputs.harper_redirector_repo }}
         run: |
           set -euo pipefail
 
-          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
-            echo "::error title=Missing Harbor secret::HARBOR_USER or HARBOR_PASSWORD is not set."
+          if [ -z "${HARPER_USER:-}" ] || [ -z "${HARPER_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harper secret::HARPER_USER or HARPER_PASSWORD is not set."
             exit 1
           fi
 
@@ -126,7 +126,7 @@ jobs:
           echo "Deploying Harper redirector app '${HARPER_PROJECT}' from package '${HARPER_REDIRECTOR_REPO}' via deploy_component (rolling restart)"
 
           # Use Harper Fabric Operations API 'deploy_component' to deploy/update the component with a rolling restart
-          http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
+          http --ignore-stdin --check-status -a "${HARPER_USER}:${HARPER_PASSWORD}" \
             POST "${HARPER_DEPLOY_URL}:9925/" \
             operation=deploy_component \
             project="${HARPER_PROJECT}" \
@@ -137,8 +137,8 @@ jobs:
       - name: Wait for Harper redirector app to be healthy
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARBOR_USER: ${{ secrets.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          HARPER_USER: ${{ secrets.HARPER_USER }}
+          HARPER_PASSWORD: ${{ secrets.HARPER_PASSWORD }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
@@ -169,8 +169,8 @@ jobs:
       - name: Create Harper redirects read-only role
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARBOR_USER: ${{ secrets.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          HARPER_USER: ${{ secrets.HARPER_USER }}
+          HARPER_PASSWORD: ${{ secrets.HARPER_PASSWORD }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
@@ -180,8 +180,8 @@ jobs:
             exit 1
           fi
 
-          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
-            echo "::error title=Missing Harbor secret for role::HARBOR_USER or HARBOR_PASSWORD is not set."
+          if [ -z "${HARPER_USER:-}" ] || [ -z "${HARPER_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harper secret for role::HARPER_USER or HARPER_PASSWORD is not set."
             exit 1
           fi
 
@@ -190,7 +190,7 @@ jobs:
 
           # Grant read-only access on the 'redirects' database tables used by the redirector component.
           # If the role already exists, this may return a non-2xx; treat that as a warning, not a hard failure.
-          if ! http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
+          if ! http --ignore-stdin --check-status -a "${HARPER_USER}:${HARPER_PASSWORD}" \
             POST "${HARPER_DEPLOY_URL}:9925/" \
             operation=add_role \
             role="${ROLE_NAME}" \
@@ -201,8 +201,8 @@ jobs:
       - name: Create Harper redirects API user and inject HARPER_TOKEN into Edgeworker
         if: ${{ steps.cfg.outputs.harper_deploy == 'true' }}
         env:
-          HARBOR_USER: ${{ secrets.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          HARPER_USER: ${{ secrets.HARPER_USER }}
+          HARPER_PASSWORD: ${{ secrets.HARPER_PASSWORD }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
@@ -212,8 +212,8 @@ jobs:
             exit 1
           fi
 
-          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
-            echo "::error title=Missing Harbor secret for user::HARBOR_USER or HARBOR_PASSWORD is not set."
+          if [ -z "${HARPER_USER:-}" ] || [ -z "${HARPER_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harper secret for user::HARPER_USER or HARPER_PASSWORD is not set."
             exit 1
           fi
 
@@ -223,7 +223,7 @@ jobs:
 
           echo "Creating Harper user '${HARPER_EDGE_USERNAME}' with role 'read_only_user' for EdgeWorker access"
 
-          http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
+          http --ignore-stdin --check-status -a "${HARPER_USER}:${HARPER_PASSWORD}" \
             POST "${HARPER_DEPLOY_URL}:9925/" \
             operation=add_user \
             role="read_only_user" \
@@ -580,8 +580,8 @@ jobs:
       - name: Upload all redirects to Harper
         if: ${{ steps.cfg.outputs.flag_upload_json == 'true' }}
         env:
-          HARBOR_USER: ${{ secrets.HARBOR_USER }}
-          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          HARPER_USER: ${{ secrets.HARPER_USER }}
+          HARPER_PASSWORD: ${{ secrets.HARPER_PASSWORD }}
           HARPER_DEPLOY_URL: ${{ steps.cfg.outputs.harper_deploy_url }}
         run: |
           set -euo pipefail
@@ -591,8 +591,8 @@ jobs:
             exit 1
           fi
 
-          if [ -z "${HARBOR_USER:-}" ] || [ -z "${HARBOR_PASSWORD:-}" ]; then
-            echo "::error title=Missing Harbor secret for redirect upload::HARBOR_USER or HARBOR_PASSWORD is not set."
+          if [ -z "${HARPER_USER:-}" ] || [ -z "${HARPER_PASSWORD:-}" ]; then
+            echo "::error title=Missing Harper secret for redirect upload::HARPER_USER or HARPER_PASSWORD is not set."
             exit 1
           fi
 
@@ -610,7 +610,7 @@ jobs:
           
           for file in "${FILES[@]}"; do
             echo "Uploading $file to ${UPLOAD_URL}..."
-            http --ignore-stdin --check-status -a "${HARBOR_USER}:${HARBOR_PASSWORD}" \
+            http --ignore-stdin --check-status -a "${HARPER_USER}:${HARPER_PASSWORD}" \
               POST "${UPLOAD_URL}" \
               Content-Type:application/json \
               @"$file"

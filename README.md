@@ -118,8 +118,8 @@ To run the workflow, you must configure the following Secrets in your GitHub rep
 | `AKAMAI_CLIENT_TOKEN` | Client Token from your `.edgerc` file. |
 | `AKAMAI_CLIENT_SECRET` | Client Secret from your `.edgerc` file. |
 | `AKAMAI_ACCESS_TOKEN` | Access Token from your `.edgerc` file. |
-| `HARBOR_USER` | Username for HarperDB authentication (admin). |
-| `HARBOR_PASSWORD` | Password for HarperDB authentication. |
+| `HARPER_USER` | Username for HarperDB authentication (admin). |
+| `HARPER_PASSWORD` | Password for HarperDB authentication. |
 
 *Optional:* If you are using a partner account, you may define `ACCOUNT_SWITCH_KEY` as a repository variable.
 
