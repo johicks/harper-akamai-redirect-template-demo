@@ -85,7 +85,6 @@ jobs:
               try:
                   # 1. LOOKUP ID
                   encoded_path = urllib.parse.quote(path)
-                  # Using the /checkredirect endpoint you verified
                   lookup_url = f"{DEPLOY_URL}/checkredirect?path={encoded_path}"
                   lookup_req = urllib.request.Request(lookup_url, method='GET', headers=HEADERS)
                   
