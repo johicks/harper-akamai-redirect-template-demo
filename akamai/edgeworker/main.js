@@ -28,6 +28,11 @@ export async function onClientRequest(request) {
 		if (response.ok) {
 			const data = await response.json();
 
+			if (!data.redirectURL) {
+				logger.log(`Redirect response missing redirectURL for ${request.url}`);
+				return;
+			}
+
 			const responseHeaders = {
 				Location: data.redirectURL,
 			};
@@ -40,6 +45,6 @@ export async function onClientRequest(request) {
 			logger.log(`No redirect found for ${request.url}`);
 		}
 	} catch (exception) {
-		logger.log(`Error occured while calling HDB: ${exception.message}`);
+		logger.log(`Error occurred while calling HDB: ${exception.message}`);
 	}
 }
