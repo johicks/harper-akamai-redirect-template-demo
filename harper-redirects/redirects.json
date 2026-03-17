@@ -3,7 +3,51 @@
 		{
 			"utcStartTime": "",
 			"utcEndTime": "",
-			"path": "/shop/live-shopping",
+			"path": "/shop/live-shopping1",
+			"host": "",
+			"version": "0",
+			"redirectURL": "/s/events",
+			"operations": "",
+			"statusCode": "301",
+			"regex": 0
+		},
+		{
+			"utcStartTime": "",
+			"utcEndTime": "",
+			"path": "/shop/live-shopping2",
+			"host": "",
+			"version": "0",
+			"redirectURL": "/s/events",
+			"operations": "",
+			"statusCode": "301",
+			"regex": 0
+		},
+		{
+			"utcStartTime": "",
+			"utcEndTime": "",
+			"path": "/shop/live-shopping3",
+			"host": "",
+			"version": "0",
+			"redirectURL": "/s/events",
+			"operations": "",
+			"statusCode": "301",
+			"regex": 0
+		},
+		{
+			"utcStartTime": "",
+			"utcEndTime": "",
+			"path": "/shop/live-shopping4",
+			"host": "",
+			"version": "0",
+			"redirectURL": "/s/events",
+			"operations": "",
+			"statusCode": "301",
+			"regex": 0
+		},
+		{
+			"utcStartTime": "",
+			"utcEndTime": "",
+			"path": "/shop/live-shopping5",
 			"host": "",
 			"version": "0",
 			"redirectURL": "/s/events",
