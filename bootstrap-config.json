@@ -10,8 +10,8 @@
     "harperRedirectBaseUrl": "https://hdb-redirects-johicks.akamaized.net"
   },
   "akamai_property": {
-    "createProperty": true,
-    "createHostname": true,
+    "createProperty": false,
+    "createHostname": false,
     "name": "harper-redirects-johicks",
     "productId": "prd_Fresca",
     "edgeHostname": "hdb-redirects-johicks.akamaized.net",
