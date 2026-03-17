@@ -4,7 +4,7 @@
     "groupId": "265792"
   },
   "akamai_edgeworker": {
-    "create": true,
+    "create": false,
     "name": "harper-redirect-worker",
     "resourceTierId": "200",
     "harperRedirectBaseUrl": "https://hdb-redirects-johicks.akamaized.net"
@@ -12,14 +12,14 @@
   "akamai_property": {
     "createProperty": true,
     "createHostname": true,
-    "name": "harper-redirects",
+    "name": "harper-redirects-johicks",
     "productId": "prd_Fresca",
     "edgeHostname": "hdb-redirects-johicks.akamaized.net",
     "originHostname": "akamai-r-c.hicks.harperfabric.com",
     "sendHostHeader": "akamai-r-c.hicks.harperfabric.com"
   },
   "harper_app": {
-    "deploy": true,
+    "deploy": false,
     "uploadRedirectJSON": true,
     "deployUrl": "https://akamai-r-c.hicks.harperfabric.com",
     "redirectorRepoUrl": "https://github.com/HarperFast/template-redirector",
